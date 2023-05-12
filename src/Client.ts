@@ -2,7 +2,7 @@ import EventEmitter from 'eventemitter3';
 import {Socket, io} from 'socket.io-client';
 import { ClientEventMap, ClientEvents, SocketClientEvents, SocketServerEvents } from './EventNames';
 import { AuthenticatedPayload, ChannelType, MessageType, RawChannel, RawMessage, RawUser } from './RawData';
-import { editMessage, postMessage } from './services/messageService';
+import { editMessage, postMessage } from './services/MessageService';
 
 
 export const Events = ClientEvents;
