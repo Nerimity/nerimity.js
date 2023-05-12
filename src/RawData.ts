@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface AuthenticatedPayload {
     user: RawUser;
     servers: any[];
@@ -39,4 +40,24 @@ export interface RawMessage {
     editedAt?: number;
     mentions?: Array<RawUser>;
     attachments?: Array<any>
+}
+
+export enum ChannelType {
+    DM_TEXT = 0,
+    SERVER_TEXT = 1,
+    CATEGORY = 2,
   }
+  
+export interface RawChannel {
+    id: string;
+    categoryId?: string;
+    name: string
+    createdById?: string;
+    serverId?: string;
+    type: ChannelType;
+    permissions?: number
+    createdAt: number
+    lastMessagedAt?: number;
+    order?: number;
+    _count?: {attachments: number}
+}
