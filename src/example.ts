@@ -9,6 +9,9 @@ client.on(Events.Ready, () => {
 
 client.on(Events.MessageCreate, message => {
     console.log(message.content);
+    if (message.content === 'ping') {
+        message.reply('Pong!');
+    }
 });
 
 

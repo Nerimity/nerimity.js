@@ -3,6 +3,7 @@ import {Socket, io} from 'socket.io-client';
 import { ClientEventMap, ClientEvents, SocketClientEvents, SocketServerEvents } from './EventNames';
 import { AuthenticatedPayload, ChannelType, MessageType, RawChannel, RawMessage, RawUser } from './RawData';
 import { editMessage, postMessage } from './services/MessageService';
+import { path } from './services/serviceEndpoints';
 
 
 export const Events = ClientEvents;
@@ -14,7 +15,7 @@ export class Client extends EventEmitter<ClientEventMap> {
     channels: Channels;
     constructor() {
         super();
-        this.socket = io('https://nerimity.com', {
+        this.socket = io(path, {
             transports: ['websocket'],
             autoConnect: false,
         });
