@@ -14,13 +14,13 @@ client.on(Events.MessageCreate, async (message) => {
   if (message.user.id === client.user.id) return;
   
   if (message.content === "!ping") {
-    const t0 = performance.now();
+    const t0 = Date.now();
     const reply = await message.reply("Pong!");
-    reply.edit(reply.content + ` (${(performance.now() - t0).toFixed(0)}ms)`);
+    reply.edit(reply.content + ` (${(Date.now() - t0)}ms)`);
   }
 })
 
 
 
 
-client.login("Token")
+client.login("token")
