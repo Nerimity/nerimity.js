@@ -1,7 +1,7 @@
 import EventEmitter from 'eventemitter3';
 import {Socket, io} from 'socket.io-client';
 import { ClientEventMap, ClientEvents, SocketClientEvents, SocketServerEvents } from './EventNames';
-import { AuthenticatedPayload, ChannelType, MessageType, RawChannel, RawMessage, RawUser } from './RawData';
+import { AuthenticatedPayload, ChannelType, MessageType, RawChannel, RawMessage, RawServer, RawServerMember, RawUser } from './RawData';
 import { editMessage, postMessage } from './services/MessageService';
 import { path } from './services/serviceEndpoints';
 
@@ -12,7 +12,9 @@ export class Client extends EventEmitter<ClientEventMap> {
     socket: Socket;
     token: string | undefined;
     user: ClientUser | undefined;
+    users: Users;
     channels: Channels;
+    servers: Servers;
     constructor() {
         super();
         this.socket = io(path, {
@@ -20,6 +22,8 @@ export class Client extends EventEmitter<ClientEventMap> {
             autoConnect: false,
         });
         this.channels = new Channels(this);
+        this.users = new Users(this);
+        this.servers = new Servers(this);
         new EventHandlers(this);
     }
 
@@ -39,6 +43,8 @@ class EventHandlers {
 
         client.socket.on(SocketServerEvents.CONNECT, this.onConnect.bind(this));
         client.socket.on(SocketServerEvents.USER_AUTHENTICATED, this.onAuthenticated.bind(this));
+        client.socket.on(SocketServerEvents.SERVER_MEMBER_JOINED, this.onServerMemberJoined.bind(this));
+        client.socket.on(SocketServerEvents.SERVER_MEMBER_LEFT, this.onServerMemberLeft.bind(this));
         client.socket.on(SocketServerEvents.MESSAGE_CREATED, this.onMessageCreated.bind(this));
     }
     onConnect() {
@@ -47,19 +53,125 @@ class EventHandlers {
     onAuthenticated(payload: AuthenticatedPayload) {
         this.client.user = new ClientUser(this.client, payload.user);
 
+        for (let i = 0; i < payload.servers.length; i++) {
+            const server = payload.servers[i];
+            this.client.servers.setCache(server);            
+        }
+
         for (let i = 0; i < payload.channels.length; i++) {
             const rawChannel = payload.channels[i];
             this.client.channels.setCache(rawChannel);
         }
+        for (let i = 0; i < payload.serverMembers.length; i++) {
+            const member = payload.serverMembers[i];
+            this.client.users.setCache(member.user);   
+            const server = this.client.servers.cache.get(member.serverId);
+            server?.members.setCache(member);
+        }
 
         this.client.emit(ClientEvents.Ready);
+    }
+
+    onServerMemberJoined(payload: {serverId: string; member: RawServerMember}) {
+        const server = this.client.servers.cache.get(payload.serverId);
+        this.client.users.setCache(payload.member.user);
+        const member = server?.members.setCache(payload.member);
+        if (!member) return;
+        this.client.emit('serverMemberJoined', member);
+    }
+    onServerMemberLeft(payload: { userId: string, serverId: string }) {
+        const server = this.client.servers.cache.get(payload.serverId);
+        const member = server?.members.cache.get(payload.userId);
+        if (!member) return;
+        this.client.emit('serverMemberLeft', member);
+        server?.members.cache.delete(payload.userId);  
     }
     onMessageCreated(payload: {message: RawMessage}) {
         const message = new Message(this.client, payload.message);
         this.client.emit(ClientEvents.MessageCreate, message);
-
     }
 }
+
+
+
+export class Users {
+    client: Client;
+    cache: Collection<string, User>;
+    constructor(client: Client) {
+        this.client = client;
+        this.cache = new Collection();
+    }
+    setCache(rawUser: RawUser) {
+        const user = new User(this.client, rawUser);
+        this.cache.set(rawUser.id, user);
+    }
+}
+
+
+export class Servers {
+    client: Client;
+    cache: Collection<string, Server>;
+    constructor(client: Client) {
+        this.client = client;
+        this.cache = new Collection();
+    }
+    setCache(rawServer: RawServer) {
+        const server = new Server(this.client, rawServer);
+        this.cache.set(server.id, server);
+    }
+}
+
+
+
+export class Server {
+    client: Client;
+    id: string;
+    name: string;
+    avatar?: string;
+
+    members: ServerMembers;
+    constructor(client: Client, server: RawServer) {
+        this.client = client;
+
+        this.id = server.id;
+        this.name = server.name;
+        this.avatar = server.avatar;
+        this.members = new ServerMembers(this.client);
+    }
+}
+
+export class ServerMembers {
+    client: Client;
+    cache: Collection<string, ServerMember>;
+    constructor(client: Client) {
+        this.client = client;
+        this.cache = new Collection();
+    }
+    setCache(rawMember: RawServerMember) {
+        const member = new ServerMember(this.client, rawMember);
+        this.cache.set(member.user.id, member);
+        return member;
+    }
+}
+export class ServerMember {
+    client: Client;
+    id: string;
+    user: User;
+    server: Server;
+
+    constructor(client: Client, member: RawServerMember) {
+        this.client = client;
+        this.id = member.user.id;
+
+        this.user = this.client.users.cache.get(member.user.id)!;
+        this.server = this.client.servers.cache.get(member.serverId)!;
+    }
+    toString() {
+        return `[@:${this.id}]`;
+    }
+}
+
+
 
 
 
@@ -120,6 +232,7 @@ export class ServerChannel extends Channel {
     serverId: string;
     permissions: number;
     categoryId?: string;
+    server: Server;
     
     constructor(client: Client, channel: RawChannel) {
         super(client, channel);
@@ -128,6 +241,8 @@ export class ServerChannel extends Channel {
         this.createdById = channel.createdById!;
         this.serverId = channel.serverId!;
         this.categoryId = channel.categoryId!;
+
+        this.server = this.client.servers.cache.get(this.serverId)!;
     }
 }
 
@@ -150,7 +265,7 @@ export class Message {
         this.content = message.content;
         this.type = message.type;
         this.createdAt = message.createdAt;
-        this.user = new User(client, message.createdBy);
+        this.user = this.client.users.cache.get(message.createdBy.id)!;
     }
     reply(content: string, opts?: MessageOpts) {
         return this.channel.send(`${this.user} ${content}`, opts);
@@ -170,7 +285,6 @@ export class Message {
         return `[q:${this.id}]`;
     }
 }
-
 
 
 class User {

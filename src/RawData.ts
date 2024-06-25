@@ -1,16 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface AuthenticatedPayload {
     user: RawUser;
-    servers: any[];
-    serverMembers: any[];
+    servers: RawServer[];
+    serverMembers: RawServerMember[];
     messageMentions: any[]
-    channels: any[];
+    channels: RawChannel[];
     serverRoles: any[];
     presences: any[];
     friends: any[];
     inbox: any[];
     lastSeenServerChannelIds: Record<string, number>; // { [channelId]: timestamp }
 }
+
+export interface RawServer {
+    id: string;
+    name: string;
+    hexColor: string;
+    defaultChannelId: string;
+    systemChannelId?: string;
+    avatar?: string;
+    banner?: string;
+    defaultRoleId: string;
+    createdById: string;
+    createdAt: number;
+    verified: boolean;
+    customEmojis: any[];
+    _count?: {
+      welcomeQuestions: number;
+    }
+  }
+
 export interface RawUser {
     id: string;
     avatar?: string;
@@ -42,6 +61,14 @@ export interface RawMessage {
     mentions?: Array<RawUser>;
     attachments?: Array<any>
 }
+
+export interface RawServerMember {
+    serverId: string;
+    user: RawUser;
+    joinedAt: number;
+    roleIds: string[];
+  }
+  
 
 export enum ChannelType {
     DM_TEXT = 0,
