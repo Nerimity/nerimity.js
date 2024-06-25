@@ -199,7 +199,24 @@ class User {
     }
 }
 
+export interface ActivityOpts {
+    action: string;
+    name: string;
+    startedAt: number;
+    endsAt?: number;
+  
+    imgSrc?: string
+    title?: string
+    subtitle?: string;
+    link?: string;
+}
+
 class ClientUser extends User {
+
+    setActivity(activity?: ActivityOpts | null) {
+        this.client.socket.emit(SocketClientEvents.UPDATE_ACTIVITY, activity);
+    }
+
     constructor(client: Client, user: RawUser) {
         super(client, user);
     }

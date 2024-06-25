@@ -16,6 +16,7 @@ export type ClientEventMap = {
 export const SocketClientEvents = {
     AUTHENTICATE: 'user:authenticate',
     NOTIFICATION_DISMISS: 'notification:dismiss',
+    UPDATE_ACTIVITY: 'user:update_activity',
 };
   
 export const SocketServerEvents = {
