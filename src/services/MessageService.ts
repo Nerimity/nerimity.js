@@ -7,6 +7,7 @@ interface PostMessageOpts {
     client: Client;
     channelId: string;
     content: string;
+    htmlEmbed?: string;
 }
 
 export function postMessage(opts: PostMessageOpts) {
@@ -14,7 +15,7 @@ export function postMessage(opts: PostMessageOpts) {
         client: opts.client,
         url: ServiceEndpoints.PostMessage(opts.channelId),
         method: 'POST',
-        body: {content: opts.content},
+        body: {content: opts.content, htmlEmbed: opts.htmlEmbed},
         useToken: true,
     }).catch(err => {throw err.message;});
 }

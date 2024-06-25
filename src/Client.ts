@@ -81,6 +81,10 @@ export class Channels {
 
 export type AllChannel = ServerChannel | Channel
 
+export interface MessageOpts {
+    htmlEmbed?: string;
+}
+
 export class Channel {
     client: Client;
     id: string;
@@ -95,11 +99,12 @@ export class Channel {
         this.createdAt = channel.createdAt;
         this.lastMessagedAt = channel.lastMessagedAt;
     }
-    async send(content: string) {
+    async send(content: string, opts?: MessageOpts) {
         const RawMessage = await postMessage({
             client: this.client,
             channelId: this.id,
-            content: content
+            content: content,
+            htmlEmbed: opts?.htmlEmbed
         });
         const message = new Message(this.client, RawMessage);
         return message;
@@ -147,8 +152,8 @@ export class Message {
         this.createdAt = message.createdAt;
         this.user = new User(client, message.createdBy);
     }
-    reply(content: string) {
-        return this.channel.send(`${this.user} ${content}`);
+    reply(content: string, opts?: MessageOpts) {
+        return this.channel.send(`${this.user} ${content}`, opts);
     }
     async edit(content: string) {
         const RawMessage = await editMessage({
