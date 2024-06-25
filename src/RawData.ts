@@ -16,6 +16,7 @@ export interface RawUser {
     avatar?: string;
     banner?: string;
     username: string;
+    bot?: boolean;
     hexColor: string;
     tag: string;
     badges: number;

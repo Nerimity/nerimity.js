@@ -179,6 +179,7 @@ class User {
     tag: string;
     badges: number;
     joinedAt?: number;
+    bot?: boolean;
     constructor(client: Client, user: RawUser) {
         this.client = client;
 
@@ -191,6 +192,7 @@ class User {
         this.joinedAt = user.joinedAt;
         this.avatar = user.avatar;
         this.banner = user.banner;
+        this.bot = user.bot;
     }
     toString() {
         return `[@:${this.id}]`;
