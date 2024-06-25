@@ -165,6 +165,10 @@ export class Message {
         const message = new Message(this.client, RawMessage);
         return message;
     }
+
+    toString() {
+        return `[q:${this.id}]`;
+    }
 }
 
 
