@@ -1,10 +1,12 @@
-import { Message, ServerMember } from './Client';
+import { Message, Server, ServerMember } from './Client';
 
 export const ClientEvents = {
     Ready: 'ready',
     MessageCreate: 'messageCreate',
     ServerMemberLeft: 'serverMemberLeft',
     ServerMemberJoined: 'serverMemberJoined',
+    ServerJoined: 'serverJoined',
+    ServerLeft: 'serverLeft',
 } as const;
 
 
@@ -13,6 +15,8 @@ export type ClientEventMap = {
     'messageCreate': (message: Message) => void;
     'serverMemberLeft': (member: ServerMember) => void;
     'serverMemberJoined': (member: ServerMember) => void;
+    'serverJoined': (server: Server) => void;
+    'serverLeft': (server: Server) => void;
 }
 
 

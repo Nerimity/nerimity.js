@@ -43,8 +43,14 @@ class EventHandlers {
 
         client.socket.on(SocketServerEvents.CONNECT, this.onConnect.bind(this));
         client.socket.on(SocketServerEvents.USER_AUTHENTICATED, this.onAuthenticated.bind(this));
+
         client.socket.on(SocketServerEvents.SERVER_MEMBER_JOINED, this.onServerMemberJoined.bind(this));
         client.socket.on(SocketServerEvents.SERVER_MEMBER_LEFT, this.onServerMemberLeft.bind(this));
+        
+        client.socket.on(SocketServerEvents.SERVER_JOINED, this.onServerJoined.bind(this));
+
+        client.socket.on(SocketServerEvents.SERVER_LEFT, this.onServerLeft.bind(this));
+
         client.socket.on(SocketServerEvents.MESSAGE_CREATED, this.onMessageCreated.bind(this));
     }
     onConnect() {
@@ -78,6 +84,44 @@ class EventHandlers {
         const member = server?.members.setCache(payload.member);
         if (!member) return;
         this.client.emit('serverMemberJoined', member);
+    }
+
+    onServerJoined(payload: {
+        server: RawServer,
+        members: RawServerMember[],
+        channels: RawChannel[],
+        // roles: any[];
+        // memberPresences: any[]
+        // voiceChannelUsers: any[];
+    }) {
+
+        const server = this.client.servers.setCache(payload.server);
+
+        for (let i = 0; i < payload.members.length; i++) {
+            const member = payload.members[i];
+            this.client.users.setCache(member.user);
+            server?.members.setCache(member);
+        }
+
+        for (let i = 0; i < payload.channels.length; i++) {
+            const channel = payload.channels[i];
+            this.client.channels.setCache(channel);
+        }
+        this.client.emit(ClientEvents.ServerJoined, server);
+    }
+    onServerLeft(payload: { serverId: string }) {
+
+        const server = this.client.servers.cache.get(payload.serverId);
+        if (!server) return;
+        this.client.emit(ClientEvents.ServerLeft, server);
+        this.client.servers.cache.delete(payload.serverId);
+
+        this.client.channels.cache.forEach((channel) => {
+            if (channel instanceof ServerChannel && channel.serverId === payload.serverId) {
+                this.client.channels.cache.delete(channel.id);
+            }
+        });
+        server.members.cache.clear();
     }
     onServerMemberLeft(payload: { userId: string, serverId: string }) {
         const server = this.client.servers.cache.get(payload.serverId);
@@ -118,6 +162,7 @@ export class Servers {
     setCache(rawServer: RawServer) {
         const server = new Server(this.client, rawServer);
         this.cache.set(server.id, server);
+        return server;
     }
 }
 
