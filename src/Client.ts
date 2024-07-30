@@ -1,9 +1,9 @@
 import EventEmitter from 'eventemitter3';
 import {Socket, io} from 'socket.io-client';
 import { ClientEventMap, ClientEvents, SocketClientEvents, SocketServerEvents } from './EventNames';
-import { AuthenticatedPayload, ChannelType, MessageType, RawChannel, RawMessage, RawServer, RawServerMember, RawUser } from './RawData';
-import { editMessage, postMessage } from './services/MessageService';
-import { path } from './services/serviceEndpoints';
+import { AuthenticatedPayload, ChannelType, MessageButtonClickPayload, MessageType, RawChannel, RawMessage, RawMessageButton, RawServer, RawServerMember, RawUser } from './RawData';
+import { buttonClickCallback, editMessage, postMessage } from './services/MessageService';
+import { path, updatePath } from './services/serviceEndpoints';
 
 
 export const Events = ClientEvents;
@@ -15,9 +15,13 @@ export class Client extends EventEmitter<ClientEventMap> {
     users: Users;
     channels: Channels;
     servers: Servers;
-    constructor() {
+
+    constructor(opts?: { urlOverride?: string; }) {
         super();
-        this.socket = io(path, {
+        if (opts?.urlOverride) {
+            updatePath(opts.urlOverride);
+        }
+        this.socket = io( path, {
             transports: ['websocket'],
             autoConnect: false,
         });
@@ -52,6 +56,8 @@ class EventHandlers {
         client.socket.on(SocketServerEvents.SERVER_LEFT, this.onServerLeft.bind(this));
 
         client.socket.on(SocketServerEvents.MESSAGE_CREATED, this.onMessageCreated.bind(this));
+
+        client.socket.on(SocketServerEvents.MESSAGE_BUTTON_CLICKED, this.onMessageButtonClicked.bind(this));
     }
     onConnect() {
         this.socket.emit(SocketClientEvents.AUTHENTICATE, {token: this.client.token});
@@ -133,6 +139,10 @@ class EventHandlers {
     onMessageCreated(payload: {message: RawMessage}) {
         const message = new Message(this.client, payload.message);
         this.client.emit(ClientEvents.MessageCreate, message);
+    }
+    onMessageButtonClicked(payload: MessageButtonClickPayload) {
+        const button = new Button(this.client, payload);
+        this.client.emit('messageButtonClick', button);
     }
 }
 
@@ -240,6 +250,7 @@ export type AllChannel = ServerChannel | Channel
 
 export interface MessageOpts {
     htmlEmbed?: string;
+    buttons?: RawMessageButton[]
 }
 
 export class Channel {
@@ -261,7 +272,8 @@ export class Channel {
             client: this.client,
             channelId: this.id,
             content: content,
-            htmlEmbed: opts?.htmlEmbed
+            htmlEmbed: opts?.htmlEmbed,
+            buttons: opts?.buttons
         });
         const message = new Message(this.client, RawMessage);
         return message;
@@ -390,4 +402,46 @@ class Collection<K, V> extends Map<K, V> {
     constructor() {
         super();
     }
+}
+
+
+
+
+export class Button {
+    client: Client;
+    id: string;
+
+    userId: string;
+    messageId: string;
+    channelId: string;
+
+    user?: User;
+    channel: Channel;
+
+
+    constructor(client: Client, payload: MessageButtonClickPayload) {
+        this.client = client;
+
+        this.id = payload.buttonId;
+        this.userId = payload.userId;
+        this.channelId = payload.channelId;
+        this.messageId = payload.messageId;
+        this.user = this.client.users.cache.get(this.userId);
+
+        this.channel = client.channels.cache.get(this.channelId)!;
+    }
+
+    async respond(opts?: {title?: string, content?: string}) {
+        await buttonClickCallback({
+            client: this.client,
+            buttonId: this.id,
+            channelId: this.channelId,
+            messageId: this.messageId,
+            userId: this.userId,
+            title: opts?.title,
+            content: opts?.content
+        });
+    }
+
+
 }

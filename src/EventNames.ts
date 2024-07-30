@@ -1,4 +1,4 @@
-import { Message, Server, ServerMember } from './Client';
+import { Button, Message, Server, ServerMember } from './Client';
 
 export const ClientEvents = {
     Ready: 'ready',
@@ -7,6 +7,7 @@ export const ClientEvents = {
     ServerMemberJoined: 'serverMemberJoined',
     ServerJoined: 'serverJoined',
     ServerLeft: 'serverLeft',
+    MessageButtonClick: 'messageButtonClick',
 } as const;
 
 
@@ -17,6 +18,7 @@ export type ClientEventMap = {
     'serverMemberJoined': (member: ServerMember) => void;
     'serverJoined': (server: Server) => void;
     'serverLeft': (server: Server) => void;
+    'messageButtonClick': (button: Button) => void;
 }
 
 
@@ -62,7 +64,7 @@ export const SocketServerEvents = {
     SERVER_CHANNEL_DELETED: 'server:channel_deleted',
     SERVER_ORDER_UPDATED: 'server:order_updated',
   
-  
+    MESSAGE_BUTTON_CLICKED: 'message:button_clicked',
   
     CHANNEL_TYPING: 'channel:typing',
     MESSAGE_CREATED: 'message:created',

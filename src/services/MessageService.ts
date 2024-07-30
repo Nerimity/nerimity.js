@@ -1,5 +1,5 @@
 import { Client } from '../Client';
-import { RawMessage } from '../RawData';
+import { RawMessage, RawMessageButton } from '../RawData';
 import { ServiceEndpoints } from './serviceEndpoints';
 import fetch from 'node-fetch';
 
@@ -8,6 +8,7 @@ interface PostMessageOpts {
     channelId: string;
     content: string;
     htmlEmbed?: string;
+    buttons?: RawMessageButton[]
 }
 
 export function postMessage(opts: PostMessageOpts) {
@@ -15,7 +16,7 @@ export function postMessage(opts: PostMessageOpts) {
         client: opts.client,
         url: ServiceEndpoints.PostMessage(opts.channelId),
         method: 'POST',
-        body: {content: opts.content, htmlEmbed: opts.htmlEmbed},
+        body: {content: opts.content, htmlEmbed: opts.htmlEmbed, buttons: opts.buttons},
         useToken: true,
     }).catch(err => {throw err.message;});
 }
@@ -33,6 +34,33 @@ export function editMessage(opts: EditMessageOpts) {
         url: ServiceEndpoints.EditMessage(opts.channelId, opts.messageId),
         method: 'PATCH',
         body: {content: opts.content},
+        useToken: true,
+    }).catch(err => {throw err.message;});
+}
+
+interface ButtonClickCallbackOpts {
+    client: Client;
+
+    buttonId: string;
+    channelId: string;
+    messageId: string;
+
+    userId: string;
+    title?: string;
+    content?: string;
+}
+
+
+export function buttonClickCallback(opts: ButtonClickCallbackOpts) {
+    return request({
+        client: opts.client,
+        url: ServiceEndpoints.ButtonClickCallback(opts.channelId, opts.messageId, opts.buttonId),
+        method: 'POST',
+        body: {
+            userId: opts.userId,
+            title: opts.title,
+            content: opts.content
+        },
         useToken: true,
     }).catch(err => {throw err.message;});
 }

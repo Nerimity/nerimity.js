@@ -9,10 +9,19 @@ client.on(Events.Ready, () => {
 
 client.on(Events.MessageCreate, message => {
     console.log(message.content);
-    if (message.content === 'ping') {
-        message.reply('Pong!');
+    if (message.content === '!ping') {
+        message.reply('Pong!', {buttons: [{id: 'hello', label: 'Hello!'}]});
     }
 });
 
+client.on(Events.MessageButtonClick, button => {  
+    if (button.id === 'hello') {
+
+        button.respond({
+            title: 'Hey!',
+            content: `Hey there **${button.user?.username}**!`
+        });
+    }
+});
 
 client.login('token');
