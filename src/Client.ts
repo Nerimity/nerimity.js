@@ -2,7 +2,7 @@ import EventEmitter from 'eventemitter3';
 import {Socket, io} from 'socket.io-client';
 import { ClientEventMap, ClientEvents, SocketClientEvents, SocketServerEvents } from './EventNames';
 import { AuthenticatedPayload, ChannelType, MessageButtonClickPayload, MessageType, RawChannel, RawMessage, RawMessageButton, RawServer, RawServerMember, RawUser } from './RawData';
-import { buttonClickCallback, editMessage, postMessage } from './services/MessageService';
+import { buttonClickCallback, deleteMessage, editMessage, postMessage } from './services/MessageService';
 import { path, updatePath } from './services/serviceEndpoints';
 
 
@@ -337,7 +337,13 @@ export class Message {
         const message = new Message(this.client, RawMessage);
         return message;
     }
-
+    async delete() {
+        return deleteMessage({
+            channelId: this.channel.id,
+            client: this.client,
+            messageId: this.id
+        });
+    }
     toString() {
         return `[q:${this.id}]`;
     }

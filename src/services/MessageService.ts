@@ -38,6 +38,20 @@ export function editMessage(opts: EditMessageOpts) {
     }).catch(err => {throw err.message;});
 }
 
+interface DeleteMessageOpts {
+    client: Client;
+    channelId: string;
+    messageId: string;
+}
+export function deleteMessage(opts: DeleteMessageOpts) {
+    return request<{message: string}>({
+        client: opts.client,
+        url: ServiceEndpoints.EditMessage(opts.channelId, opts.messageId),
+        method: 'DELETE',
+        useToken: true,
+    }).catch(err => {throw err.message;});
+}
+
 interface ButtonClickCallbackOpts {
     client: Client;
 
