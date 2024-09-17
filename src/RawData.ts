@@ -61,6 +61,7 @@ export enum MessageType {
 export interface RawMessage {
   id: string;
   channelId: string;
+  silent?: string;
   content?: string;
   createdBy: RawUser;
   type: MessageType;

@@ -251,6 +251,7 @@ export type AllChannel = ServerChannel | Channel
 export interface MessageOpts {
     htmlEmbed?: string;
     buttons?: RawMessageButton[]
+    silent?: boolean;
 }
 
 export class Channel {
@@ -272,6 +273,7 @@ export class Channel {
             client: this.client,
             channelId: this.id,
             content: content,
+            silent: opts?.silent,
             htmlEmbed: opts?.htmlEmbed,
             buttons: opts?.buttons
         });

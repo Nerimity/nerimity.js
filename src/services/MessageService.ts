@@ -9,6 +9,7 @@ interface PostMessageOpts {
     content: string;
     htmlEmbed?: string;
     buttons?: RawMessageButton[]
+    silent? : boolean
 }
 
 export function postMessage(opts: PostMessageOpts) {
@@ -16,7 +17,7 @@ export function postMessage(opts: PostMessageOpts) {
         client: opts.client,
         url: ServiceEndpoints.PostMessage(opts.channelId),
         method: 'POST',
-        body: {content: opts.content, htmlEmbed: opts.htmlEmbed, buttons: opts.buttons},
+        body: {content: opts.content, htmlEmbed: opts.htmlEmbed, buttons: opts.buttons, silent: opts.silent},
         useToken: true,
     }).catch(err => {throw err.message;});
 }
