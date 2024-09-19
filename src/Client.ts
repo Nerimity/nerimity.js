@@ -305,6 +305,9 @@ export class ServerChannel extends Channel {
     }
 }
 
+const UserMentionRegex = /\[@:([0-9]+)\]/gm;
+
+
 
 export class Message {
     client: Client;
@@ -315,6 +318,7 @@ export class Message {
     channelId: string;
     channel: AllChannel;
     user: User;
+    mentions: User[] = [];
     constructor(client: Client, message: RawMessage) {
         this.client = client;
         
@@ -325,6 +329,13 @@ export class Message {
         this.type = message.type;
         this.createdAt = message.createdAt;
         this.user = this.client.users.cache.get(message.createdBy.id)!;
+
+        if (this.content) {
+            const mentionIds = [...this.content.matchAll(UserMentionRegex)].map(exp => exp[1]);
+            this.mentions = mentionIds.map(id => this.client.users.cache.get(id)!).filter(u => u);
+        }
+        
+
     }
     reply(content: string, opts?: MessageOpts) {
         return this.channel.send(`${this.user} ${content}`, opts);
