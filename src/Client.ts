@@ -52,6 +52,7 @@ class EventHandlers {
         client.socket.on(SocketServerEvents.SERVER_MEMBER_LEFT, this.onServerMemberLeft.bind(this));
         
         client.socket.on(SocketServerEvents.SERVER_JOINED, this.onServerJoined.bind(this));
+        client.socket.on(SocketServerEvents.SERVER_CHANNEL_CREATED, this.onServerChannelCreated.bind(this));
 
         client.socket.on(SocketServerEvents.SERVER_LEFT, this.onServerLeft.bind(this));
 
@@ -114,6 +115,10 @@ class EventHandlers {
             this.client.channels.setCache(channel);
         }
         this.client.emit(ClientEvents.ServerJoined, server);
+    }
+    onServerChannelCreated(payload: {serverId: string; channel: RawChannel}) {
+        const channel = this.client.channels.setCache(payload.channel);
+        this.client.emit(ClientEvents.ServerChannelCreated, channel as ServerChannel);
     }
     onServerLeft(payload: { serverId: string }) {
 
@@ -242,6 +247,7 @@ export class Channels {
         if (rawChannel.serverId) channel = new ServerChannel(this.client, rawChannel);
         else channel = new Channel(this.client, rawChannel); 
         this.cache.set(channel.id, channel);
+        return channel;
     }
 }
 

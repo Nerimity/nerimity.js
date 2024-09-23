@@ -1,4 +1,4 @@
-import { Button, Message, Server, ServerMember } from './Client';
+import { Button, Message, Server, ServerChannel, ServerMember } from './Client';
 
 export const ClientEvents = {
     Ready: 'ready',
@@ -8,6 +8,7 @@ export const ClientEvents = {
     ServerJoined: 'serverJoined',
     ServerLeft: 'serverLeft',
     MessageButtonClick: 'messageButtonClick',
+    ServerChannelCreated: 'serverChannelCreated',
 } as const;
 
 
@@ -19,6 +20,7 @@ export type ClientEventMap = {
     'serverJoined': (server: Server) => void;
     'serverLeft': (server: Server) => void;
     'messageButtonClick': (button: Button) => void;
+    'serverChannelCreated': (channel: ServerChannel) => void;
 }
 
 
