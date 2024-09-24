@@ -53,6 +53,9 @@ class EventHandlers {
         
         client.socket.on(SocketServerEvents.SERVER_JOINED, this.onServerJoined.bind(this));
         client.socket.on(SocketServerEvents.SERVER_CHANNEL_CREATED, this.onServerChannelCreated.bind(this));
+        client.socket.on(SocketServerEvents.SERVER_CHANNEL_UPDATED, this.onServerChannelUpdated.bind(this));
+        client.socket.on(SocketServerEvents.SERVER_CHANNEL_DELETED, this.onServerChannelDeleted.bind(this));
+
 
         client.socket.on(SocketServerEvents.SERVER_LEFT, this.onServerLeft.bind(this));
 
@@ -119,6 +122,22 @@ class EventHandlers {
     onServerChannelCreated(payload: {serverId: string; channel: RawChannel}) {
         const channel = this.client.channels.setCache(payload.channel);
         this.client.emit(ClientEvents.ServerChannelCreated, channel as ServerChannel);
+    }
+    onServerChannelUpdated(payload: {serverId: string; channelId: string, updated: Partial<RawChannel>}) {
+        const channel = this.client.channels.cache.get(payload.channelId);
+        const updated = payload.updated;
+        if (channel) {
+            updateClass<ServerChannel>(channel as ServerChannel, updated);
+            this.client.emit(ClientEvents.ServerChannelUpdated, channel as ServerChannel);
+        }
+    }
+    onServerChannelDeleted(payload: {serverId: string; channelId: string}) {
+        const channel = this.client.channels.cache.has(payload.channelId);
+        if (channel) {
+            this.client.channels.cache.delete(payload.channelId);
+            this.client.emit(ClientEvents.ServerChannelDeleted, {channelId: payload.channelId, serverId: payload.serverId});
+        }
+
     }
     onServerLeft(payload: { serverId: string }) {
 
@@ -274,6 +293,7 @@ export class Channel {
         this.createdAt = channel.createdAt;
         this.lastMessagedAt = channel.lastMessagedAt;
     }
+
     async send(content: string, opts?: MessageOpts) {
         const RawMessage = await postMessage({
             client: this.client,
@@ -288,6 +308,12 @@ export class Channel {
     }
     toString() {
         return `[#:${this.id}]`;
+    }
+}
+
+function updateClass<T extends object>(classInstance: T, update: Partial<T>) {
+    for (const [key, value] of Object.entries(update) as [keyof T, T[keyof T]][]) {
+        classInstance[key] = value;
     }
 }
 

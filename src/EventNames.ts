@@ -9,6 +9,8 @@ export const ClientEvents = {
     ServerLeft: 'serverLeft',
     MessageButtonClick: 'messageButtonClick',
     ServerChannelCreated: 'serverChannelCreated',
+    ServerChannelUpdated: 'serverChannelUpdated',
+    ServerChannelDeleted: 'serverChannelDeleted',
 } as const;
 
 
@@ -21,6 +23,8 @@ export type ClientEventMap = {
     'serverLeft': (server: Server) => void;
     'messageButtonClick': (button: Button) => void;
     'serverChannelCreated': (channel: ServerChannel) => void;
+    'serverChannelUpdated': (channel: ServerChannel) => void;
+    'serverChannelDeleted': (data: {serverId: string; channelId: string}) => void;
 }
 
 
