@@ -182,6 +182,7 @@ export class Users {
     setCache(rawUser: RawUser) {
         const user = new User(this.client, rawUser);
         this.cache.set(rawUser.id, user);
+        return user;
     }
 }
 
@@ -261,10 +262,10 @@ export class Channels {
         this.client = client;
         this.cache = new Collection();
     }
-    setCache(rawChannel: RawChannel) {
+    setCache(rawChannel: {id: string} & Omit<Partial<RawChannel>, 'id'>) {
         let channel: AllChannel;
-        if (rawChannel.serverId) channel = new ServerChannel(this.client, rawChannel);
-        else channel = new Channel(this.client, rawChannel); 
+        if (rawChannel.serverId) channel = new ServerChannel(this.client, rawChannel as any);
+        else channel = new Channel(this.client, rawChannel as any); 
         this.cache.set(channel.id, channel);
         return channel;
     }
@@ -284,7 +285,7 @@ export class Channel {
     id: string;
     
     type: ChannelType;
-    createdAt: number;
+    createdAt?: number;
     lastMessagedAt?: number;
     constructor(client: Client, channel: RawChannel) {
         this.client = client;
@@ -361,6 +362,14 @@ export class Message {
         this.type = message.type;
         this.createdAt = message.createdAt;
         this.user = this.client.users.cache.get(message.createdBy.id)!;
+
+        if (!this.user) {
+            this.user = this.client.users.setCache(message.createdBy);
+        }
+
+        if (!this.channel) {
+            this.channel = this.client.channels.setCache({id: this.channelId, type: ChannelType.DM_TEXT});
+        }
 
         if (this.content) {
             const mentionIds = [...this.content.matchAll(UserMentionRegex)].map(exp => exp[1]);
