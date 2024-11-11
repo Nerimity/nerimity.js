@@ -12,14 +12,16 @@ interface PostMessageOpts {
     silent? : boolean
 }
 
-export function postMessage(opts: PostMessageOpts) {
-    return request<RawMessage>({
+export async function postMessage(opts: PostMessageOpts) {
+    return await request<RawMessage>({
         client: opts.client,
         url: ServiceEndpoints.PostMessage(opts.channelId),
         method: 'POST',
         body: {content: opts.content, htmlEmbed: opts.htmlEmbed, buttons: opts.buttons, silent: opts.silent},
         useToken: true,
-    }).catch(err => {throw err.message;});
+    }).catch(err => {
+        throw new Error(`Failed to send message. ${err.message}`)
+    });
 }
 
 interface EditMessageOpts {
