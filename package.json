@@ -1,6 +1,6 @@
 {
   "name": "@nerimity/nerimity.js",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "description": "",
   "main": "build/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "author": "SupertigerDev",
   "license": "ISC",
   "devDependencies": {
-    "@types/node-fetch": "^2.6.11",
+    "@types/node-fetch": "^2.6.12",
     "@types/ws": "^8.5.12",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",

@@ -106,3 +106,7 @@ export interface RawChannel {
   order?: number;
   _count?: { attachments: number };
 }
+
+export interface RawCDNUpload {
+  fileId: string;
+}
