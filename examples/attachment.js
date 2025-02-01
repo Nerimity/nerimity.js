@@ -9,13 +9,18 @@ const client = new Client();
 
 client.on(Events.Ready, async () => {
   console.log(`Connected as ${client.user?.username}!`);
-  const attachment = new AttachmentBuilder(await file, "test.txt");
-  console.log(await attachment.build())
 });
 
 
 client.on(Events.MessageCreate, async (message) => {
   if (message.user.id === client.user.id) return;
+  if (message.content === "!attachment") {
+    let wads = new AttachmentBuilder(await file, "test.txt")
+    const id = await wads.build(message.channel)
+    await message.reply("hello", {
+      nerimityCdnFileId: id
+    })
+  }
 })
 
 

@@ -1,5 +1,9 @@
+import { Channel } from "./Client";
+import { RawCDNUpload } from "./RawData";
+
 let url = "https://cdn.nerimity.com"
 let uploadUrl = `${url}/upload`
+let saveUrl = `${url}/attachments`
 
 export class AttachmentBuilder {
     private file: Blob;
@@ -10,12 +14,26 @@ export class AttachmentBuilder {
         this.name = name;
     }
 
-    public async build() : Promise<string> {
+    public async build(channel: Channel) : Promise<string> {
         const formData = new FormData();
         formData.set("file", this.file, this.name);
         const response = await Upload(formData);
+        await SendUploadChannel(channel.id, response);
         return response.fileId;
     }
+}
+
+async function SendUploadChannel(id: string, cdn: RawCDNUpload) {
+    const response = await fetch(`${saveUrl}/${id}/${cdn.fileId}`, {
+        method: 'POST',
+        body: JSON.stringify(cdn),
+    })
+
+    if (!response.ok) {
+        throw new Error(`Failed to send attachment: ${response.statusText}`);
+    }
+
+    return await response.json();
 }
 
 async function Upload(dat: FormData) {
