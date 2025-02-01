@@ -330,6 +330,7 @@ export type AllChannel = ServerChannel | Channel;
 
 export interface MessageOpts {
   htmlEmbed?: string;
+  nerimityCdnFileId?: string;
   buttons?: RawMessageButton[];
   silent?: boolean;
 }
@@ -355,6 +356,7 @@ export class Channel {
       channelId: this.id,
       content: content,
       silent: opts?.silent,
+      nerimityCdnFileId: opts?.nerimityCdnFileId,
       htmlEmbed: opts?.htmlEmbed,
       buttons: opts?.buttons,
     });
