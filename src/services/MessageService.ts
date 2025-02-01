@@ -21,7 +21,7 @@ export async function postMessage(opts: PostMessageOpts) {
         body: {content: opts.content, nerimityCdnFileId: opts.nerimityCdnFileId, htmlEmbed: opts.htmlEmbed, buttons: opts.buttons, silent: opts.silent},
         useToken: true,
     }).catch(err => {
-        throw new Error(`Failed to send message. ${err.message}`)
+        throw new Error(`Failed to send message. ${err.message}`);
     });
 }
 

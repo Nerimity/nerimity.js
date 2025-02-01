@@ -1,9 +1,9 @@
-import { Channel } from "./Client";
-import { RawCDNUpload } from "./RawData";
+import { Channel } from './Client';
+import { RawCDNUpload } from './RawData';
 
-let url = "https://cdn.nerimity.com"
-let uploadUrl = `${url}/upload`
-let saveUrl = `${url}/attachments`
+const url = 'https://cdn.nerimity.com';
+const uploadUrl = `${url}/upload`;
+const saveUrl = `${url}/attachments`;
 
 export class AttachmentBuilder {
     private file: Blob;
@@ -14,20 +14,20 @@ export class AttachmentBuilder {
         this.name = name;
     }
 
-    public async build(channel: Channel) : Promise<string> {
+    public async build(channel: Channel): Promise<string> {
         const formData = new FormData();
-        formData.set("file", this.file, this.name);
-        const response = await Upload(formData);
-        await SendUploadChannel(channel.id, response);
+        formData.set('file', this.file, this.name);
+        const response = await upload(formData);
+        await sendUploadChannel(channel.id, response);
         return response.fileId;
     }
 }
 
-async function SendUploadChannel(id: string, cdn: RawCDNUpload) {
+async function sendUploadChannel(id: string, cdn: RawCDNUpload) {
     const response = await fetch(`${saveUrl}/${id}/${cdn.fileId}`, {
         method: 'POST',
         body: JSON.stringify(cdn),
-    })
+    });
 
     if (!response.ok) {
         throw new Error(`Failed to send attachment: ${response.statusText}`);
@@ -36,11 +36,11 @@ async function SendUploadChannel(id: string, cdn: RawCDNUpload) {
     return await response.json();
 }
 
-async function Upload(dat: FormData) {
+async function upload(dat: FormData) {
     const response = await fetch(uploadUrl, {
         method: 'POST',
         body: dat,
-    })
+    });
 
     if (!response.ok) {
         throw new Error(`Failed to upload attachment: ${response.statusText}`);
