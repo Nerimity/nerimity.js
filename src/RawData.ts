@@ -110,3 +110,24 @@ export interface RawChannel {
 export interface RawCDNUpload {
   fileId: string;
 }
+
+export interface RawPost {
+  id: string;
+  content?: string;
+  attachments?: Array<any>;
+  deleted: boolean;
+  block?: boolean;
+  commentToId: string;
+  commentTo?: RawPost;
+  createdBy: RawUser;
+  createdAt: number;
+  editedAt: number;
+  likedBy: { id: string }[]; // if you liked this post, array will not be empty
+  reposts: { id: string; createdBy: { id: string; username: string } }[];
+  repost?: RawPost;
+  _count: { likedBy: number; comments: number; reposts: number };
+  views: number;
+  announcement: any;
+
+  poll?: any;
+}
