@@ -38,6 +38,7 @@ export class Client extends EventEmitter<ClientEventMap> {
   channels: Channels;
   servers: Servers;
   posts: Posts;
+  messages: Messages;
 
   constructor(opts?: { urlOverride?: string }) {
     super();
@@ -52,6 +53,7 @@ export class Client extends EventEmitter<ClientEventMap> {
     this.users = new Users(this);
     this.servers = new Servers(this);
     this.posts = new Posts(this);
+    this.messages = new Messages(this);
     new EventHandlers(this);
   }
 
@@ -229,7 +231,19 @@ class EventHandlers {
   }
   onMessageCreated(payload: { message: RawMessage }) {
     const message = new Message(this.client, payload.message);
+    this.client.messages.setCache(message);
     this.client.emit(ClientEvents.MessageCreate, message);
+  }
+  onMessageUpdated(payload: { channelId: string; messageId: string; updated: Partial<Message>}) {
+    const message = this.client.messages.cache.get(payload.messageId);
+    const updated = payload.updated;
+    if (message) {
+      updateClass<Message>(message as Message, updated);
+      this.client.emit(
+        ClientEvents.MessageUpdate,
+        message as Message
+      );
+    }
   }
   onMessageButtonClicked(payload: MessageButtonClickPayload) {
     const button = new Button(this.client, payload);
@@ -327,6 +341,21 @@ export class Channels {
     else channel = new Channel(this.client, rawChannel as any);
     this.cache.set(channel.id, channel);
     return channel;
+  }
+}
+
+export class Messages {
+  client: Client;
+  cache: Collection<string, Message>;
+  constructor(client: Client) {
+    this.client = client;
+    this.cache = new Collection();
+  }
+
+  setCache(rawMessage: { id: string } & Omit<Partial<RawMessage>, "id">) {
+    let message: Message = new Message(this.client, rawMessage as any);
+    this.cache.set(message.id, message);
+    return message;
   }
 }
 

@@ -3,6 +3,7 @@ import { Button, Message, Server, ServerChannel, ServerMember } from './Client';
 export const ClientEvents = {
     Ready: 'ready',
     MessageCreate: 'messageCreate',
+    MessageUpdate: 'messageUpdate',
     ServerMemberLeft: 'serverMemberLeft',
     ServerMemberJoined: 'serverMemberJoined',
     ServerJoined: 'serverJoined',
@@ -17,6 +18,7 @@ export const ClientEvents = {
 export type ClientEventMap = {
     'ready': () => void;
     'messageCreate': (message: Message) => void;
+    'messageUpdate': (message: Message) => void;
     'serverMemberLeft': (member: ServerMember) => void;
     'serverMemberJoined': (member: ServerMember) => void;
     'serverJoined': (server: Server) => void;
