@@ -5,7 +5,8 @@
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "tsc"
+    "prepublishOnly": "tsc",
+    "dev": "tsc && node tests/test.js"
   },
   "keywords": [],
   "author": "SupertigerDev",
