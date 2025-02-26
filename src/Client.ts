@@ -355,12 +355,14 @@ export class Channel {
   type: ChannelType;
   createdAt?: number;
   lastMessagedAt?: number;
+  server?: Server;
   constructor(client: Client, channel: RawChannel) {
     this.client = client;
     this.id = channel.id;
     this.type = channel.type;
     this.createdAt = channel.createdAt;
     this.lastMessagedAt = channel.lastMessagedAt;
+    if(channel.serverId) this.server = this.client.servers.cache.get(channel.serverId)!;
   }
 
   async send(content: string, opts?: MessageOpts) {
@@ -458,7 +460,6 @@ export class Message {
   reply(content: string, opts?: MessageOpts) {
     let fOpts: MessageOpts = opts || {};
     fOpts.replyToMessageIds = [this.id];
-    console.log(fOpts)
     return this.channel.send(content, opts);
   }
   async edit(content: string) {
