@@ -10,6 +10,8 @@ interface PostMessageOpts {
     nerimityCdnFileId?: string;
     htmlEmbed?: string;
     buttons?: RawMessageButton[]
+    replyToMessageIds?: string[];
+    mentionReplies?: boolean;
     silent? : boolean
 }
 
@@ -18,7 +20,7 @@ export async function postMessage(opts: PostMessageOpts) {
         client: opts.client,
         url: ServiceEndpoints.PostMessage(opts.channelId),
         method: 'POST',
-        body: {content: opts.content, nerimityCdnFileId: opts.nerimityCdnFileId, htmlEmbed: opts.htmlEmbed, buttons: opts.buttons, silent: opts.silent},
+        body: {content: opts.content, nerimityCdnFileId: opts.nerimityCdnFileId, htmlEmbed: opts.htmlEmbed, buttons: opts.buttons, silent: opts.silent, mentionReplies: opts.mentionReplies, replyToMessageIds: opts.replyToMessageIds},
         useToken: true,
     }).catch(err => {
         throw new Error(`Failed to send message. ${err.message}`);

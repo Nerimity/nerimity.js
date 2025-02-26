@@ -337,6 +337,8 @@ export interface MessageOpts {
   nerimityCdnFileId?: string;
   buttons?: RawMessageButton[];
   silent?: boolean;
+  replyToMessageIds?: string[];
+  mentionReplies?: boolean;
 }
 
 export interface PostOpts {
@@ -353,12 +355,14 @@ export class Channel {
   type: ChannelType;
   createdAt?: number;
   lastMessagedAt?: number;
+  server?: Server;
   constructor(client: Client, channel: RawChannel) {
     this.client = client;
     this.id = channel.id;
     this.type = channel.type;
     this.createdAt = channel.createdAt;
     this.lastMessagedAt = channel.lastMessagedAt;
+    if(channel.serverId) this.server = this.client.servers.cache.get(channel.serverId)!;
   }
 
   async send(content: string, opts?: MessageOpts) {
@@ -370,6 +374,8 @@ export class Channel {
       nerimityCdnFileId: opts?.nerimityCdnFileId,
       htmlEmbed: opts?.htmlEmbed,
       buttons: opts?.buttons,
+      replyToMessageIds: opts?.replyToMessageIds,
+      mentionReplies: opts?.mentionReplies,
     });
     const message = new Message(this.client, RawMessage);
     return message;
@@ -452,7 +458,9 @@ export class Message {
     }
   }
   reply(content: string, opts?: MessageOpts) {
-    return this.channel.send(`${this.user} ${content}`, opts);
+    let fOpts: MessageOpts = opts || {};
+    fOpts.replyToMessageIds = [this.id];
+    return this.channel.send(content, opts);
   }
   async edit(content: string) {
     const RawMessage = await editMessage({
