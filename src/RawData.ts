@@ -12,6 +12,12 @@ export interface AuthenticatedPayload {
   lastSeenServerChannelIds: Record<string, number>; // { [channelId]: timestamp }
 }
 
+export interface RawBotCommand {
+  name: string;
+  description: string;
+  args: string;
+  botUserId: string;
+}
 
 export interface MessageButtonClickPayload {
   messageId: string;
@@ -69,9 +75,8 @@ export interface RawMessage {
   editedAt?: number;
   mentions?: Array<RawUser>;
   attachments?: Array<any>;
-  buttons?: RawMessageButton[]
+  buttons?: RawMessageButton[];
 }
-
 
 export interface RawMessageButton {
   id: string;

@@ -11,6 +11,7 @@ import {
   ChannelType,
   MessageButtonClickPayload,
   MessageType,
+  RawBotCommand,
   RawChannel,
   RawMessage,
   RawMessageButton,
@@ -26,7 +27,13 @@ import {
   postMessage,
 } from "./services/MessageService";
 import { path, updatePath } from "./services/serviceEndpoints";
-import { deletePost, editPost, getPosts, postPost } from "./services/PostsService";
+import {
+  deletePost,
+  editPost,
+  getPosts,
+  postPost,
+} from "./services/PostsService";
+import { updateCommands as postUpdateCommands } from "./services/ApplicationService";
 
 export const Events = ClientEvents;
 
@@ -55,6 +62,9 @@ export class Client extends EventEmitter<ClientEventMap> {
     new EventHandlers(this);
   }
 
+  updateCommands(token: string, commands: Omit<RawBotCommand, "botUserId">[]) {
+    return postUpdateCommands(token, commands);
+  }
   public login(token: string) {
     this.token = token;
     this.socket.connect();
@@ -362,7 +372,8 @@ export class Channel {
     this.type = channel.type;
     this.createdAt = channel.createdAt;
     this.lastMessagedAt = channel.lastMessagedAt;
-    if(channel.serverId) this.server = this.client.servers.cache.get(channel.serverId)!;
+    if (channel.serverId)
+      this.server = this.client.servers.cache.get(channel.serverId)!;
   }
 
   async send(content: string, opts?: MessageOpts) {
@@ -415,6 +426,7 @@ export class ServerChannel extends Channel {
 }
 
 const UserMentionRegex = /\[@:([0-9]+)\]/gm;
+const CommandRegex = /^(\/[^:\s]*):(\d+)( .*)?$/m;
 
 export class Message {
   client: Client;
@@ -426,6 +438,7 @@ export class Message {
   channel: AllChannel;
   user: User;
   mentions: User[] = [];
+  command?: { name: string; args: string[] };
   constructor(client: Client, message: RawMessage) {
     this.client = client;
 
@@ -436,6 +449,14 @@ export class Message {
     this.type = message.type;
     this.createdAt = message.createdAt;
     this.user = this.client.users.cache.get(message.createdBy.id)!;
+
+    const cmd = message.content?.match(CommandRegex);
+    if (cmd?.[2] === this.client.user?.id) {
+      this.command = {
+        name: cmd?.[1]!.substring(1)!,
+        args: message.content!.split(" ").slice(1),
+      };
+    }
 
     if (!this.user) {
       this.user = this.client.users.setCache(message.createdBy);
@@ -556,7 +577,7 @@ export class Post {
       client: this.client,
       content: content,
       postId: this.id,
-    })
+    });
 
     const post = new Post(this.client, RawPost);
     return post;
@@ -566,9 +587,8 @@ export class Post {
     await deletePost({
       client: this.client,
       postId: this.id,
-    })
+    });
   }
-
 }
 
 class User {
