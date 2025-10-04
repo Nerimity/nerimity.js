@@ -2,7 +2,7 @@
  * Options for sending a webhook message.
  */
 export interface WebhookOptions {
-    /** Message content */
+    /** Message content. */
     content?: string;
     /** Username to display. */
     username?: string;
@@ -14,8 +14,8 @@ export interface WebhookOptions {
  * Nerimity.js implementation for sending Nerimity webhooks.
  */
 export class WebhookBuilder {
-    private channelId: string;
-    private token: string;
+    private channelId: string = "";
+    private token: string = "";
     private options: WebhookOptions;
 
     /**
@@ -72,27 +72,10 @@ export class WebhookBuilder {
      * @throws If an option type is invalid.
      */
     private validateOptions(options: WebhookOptions) {
-        if (options.content && typeof options.content !== "string")
-            throw new Error("Webhook option 'content' must be a string");
         if (options.username && typeof options.username !== "string")
             throw new Error("Webhook option 'username' must be a string");
         if (options.avatarUrl && typeof options.avatarUrl !== "string")
             throw new Error("Webhook option 'avatarUrl' must be a string");
-    }
-
-    /**
-     * Set the content of the webhook message.
-     *
-     * @param content - The text message content.
-     * @returns The current WebhookBuilder instance.
-     *
-     * @throws If content is not a string.
-     */
-    public setContent(content: string) {
-        if (typeof content !== "string")
-            throw new Error("Content must be a string");
-        this.options.content = content;
-        return this;
     }
 
     /**
@@ -132,14 +115,14 @@ export class WebhookBuilder {
      *
      * @throws If the request fails, is unauthorized, or returns invalid JSON.
      */
-    public async send(): Promise<any> {
+    public async send(content: string): Promise<any> {
         const url = `https://nerimity.com/api/webhooks/${this.channelId}/${this.token}`;
 
         try {
             const res = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(this.options),
+                body: JSON.stringify({content, ...this.options}),
             });
 
             if (!res.ok) {
