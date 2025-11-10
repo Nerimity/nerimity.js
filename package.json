@@ -1,6 +1,6 @@
 {
   "name": "@nerimity/nerimity.js",
-  "version": "1.12.0",
+  "version": "1.12.1",
   "description": "",
   "main": "build/index.js",
   "scripts": {
