@@ -658,6 +658,9 @@ export class Message {
         .filter((u) => u);
     }
   }
+  get member() {
+    return this.channel.server?.members.cache.get(this.user.id);
+  }
   reply(content: string, opts?: MessageOpts) {
     let fOpts: MessageOpts = opts || {};
     fOpts.replyToMessageIds = [this.id];
