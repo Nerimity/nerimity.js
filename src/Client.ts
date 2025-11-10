@@ -34,6 +34,7 @@ import {
   postPost,
 } from "./services/PostsService";
 import { updateCommands as postUpdateCommands } from "./services/ApplicationService";
+import { banServerMember } from "./services/ServerService";
 
 export const Events = ClientEvents;
 
@@ -290,6 +291,10 @@ export class Server {
     this.avatar = server.avatar;
     this.members = new ServerMembers(this.client);
   }
+
+  async banMember(userId: string) {
+    return banServerMember(this.client, this.id, userId);
+  }
 }
 
 export class ServerMembers {
@@ -320,6 +325,9 @@ export class ServerMember {
   }
   toString() {
     return `[@:${this.id}]`;
+  }
+  async ban() {
+    return banServerMember(this.client, this.server.id, this.user.id);
   }
 }
 

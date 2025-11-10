@@ -28,6 +28,9 @@ const ButtonClickCallback = (
 ) =>
   `${BaseUrl}/channels/${channelId}/messages/${messageId}/buttons/${buttonId}/callback`;
 
+const serverMemberBan = (serverId: string, userId: string) =>
+  `${BaseUrl}/servers/${serverId}/bans/${userId}`;
+
 export const ServiceEndpoints = {
   GetMessages,
   PostMessage,
@@ -38,4 +41,5 @@ export const ServiceEndpoints = {
   DeletePost,
   BotCommands,
   ButtonClickCallback,
+  serverMemberBan,
 };
