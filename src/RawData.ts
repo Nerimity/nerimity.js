@@ -89,6 +89,7 @@ export interface RawMessageButton {
 export interface RawServerMember {
   serverId: string;
   user: RawUser;
+  nickname?: string | null;
   joinedAt: number;
   roleIds: string[];
 }
@@ -98,7 +99,19 @@ export enum ChannelType {
   SERVER_TEXT = 1,
   CATEGORY = 2,
 }
-
+export interface RawServerRole {
+  id: string;
+  name: string;
+  icon?: string;
+  order: number;
+  hexColor: string;
+  createdById: string;
+  permissions: number;
+  serverId: string;
+  hideRole: boolean;
+  botRole?: boolean;
+  applyOnJoin?: boolean;
+}
 export interface RawChannel {
   id: string;
   categoryId?: string;

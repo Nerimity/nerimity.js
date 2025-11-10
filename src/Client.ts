@@ -18,6 +18,7 @@ import {
   RawPost,
   RawServer,
   RawServerMember,
+  RawServerRole,
   RawUser,
 } from "./RawData";
 import {
@@ -35,6 +36,12 @@ import {
 } from "./services/PostsService";
 import { updateCommands as postUpdateCommands } from "./services/ApplicationService";
 import { banServerMember } from "./services/ServerService";
+import {
+  addBit,
+  AvailablePermissions,
+  hasBit,
+  RolePermissions,
+} from "./bitwise";
 
 export const Events = ClientEvents;
 
@@ -90,6 +97,10 @@ class EventHandlers {
       this.onServerMemberJoined.bind(this)
     );
     client.socket.on(
+      SocketServerEvents.SERVER_MEMBER_UPDATED,
+      this.onServerMemberUpdated.bind(this)
+    );
+    client.socket.on(
       SocketServerEvents.SERVER_MEMBER_LEFT,
       this.onServerMemberLeft.bind(this)
     );
@@ -125,6 +136,22 @@ class EventHandlers {
       SocketServerEvents.MESSAGE_BUTTON_CLICKED,
       this.onMessageButtonClicked.bind(this)
     );
+    client.socket.on(
+      SocketServerEvents.SERVER_ROLE_CREATED,
+      this.onServerRoleCreated.bind(this)
+    );
+    client.socket.on(
+      SocketServerEvents.SERVER_ROLE_DELETED,
+      this.onServerRoleDeleted.bind(this)
+    );
+    client.socket.on(
+      SocketServerEvents.SERVER_ROLE_UPDATED,
+      this.onServerRoleUpdated.bind(this)
+    );
+    client.socket.on(
+      SocketServerEvents.SERVER_ROLE_ORDER_UPDATED,
+      this.onServerRoleOrderUpdated.bind(this)
+    );
   }
   onConnect() {
     this.socket.emit(SocketClientEvents.AUTHENTICATE, {
@@ -150,6 +177,12 @@ class EventHandlers {
       server?.members.setCache(member);
     }
 
+    for (let i = 0; i < payload.serverRoles.length; i++) {
+      const role = payload.serverRoles[i];
+      const server = this.client.servers.cache.get(role.serverId);
+      server?.roles.setCache(role);
+    }
+
     this.client.emit(ClientEvents.Ready);
   }
 
@@ -158,14 +191,30 @@ class EventHandlers {
     this.client.users.setCache(payload.member.user);
     const member = server?.members.setCache(payload.member);
     if (!member) return;
-    this.client.emit("serverMemberJoined", member);
+    this.client.emit(ClientEvents.ServerMemberJoined, member);
+  }
+
+  onServerMemberUpdated(payload: {
+    serverId: string;
+    userId: string;
+    updated: {
+      roleIds: string[];
+    };
+  }) {
+    const server = this.client.servers.cache.get(payload.serverId);
+    const member = server?.members.cache.get(payload.userId);
+    if (!member) return;
+
+    updateClass<ServerMember>(member, payload.updated);
+
+    this.client.emit(ClientEvents.ServerMemberUpdated, member);
   }
 
   onServerJoined(payload: {
     server: RawServer;
     members: RawServerMember[];
     channels: RawChannel[];
-    // roles: any[];
+    roles: RawServerRole[];
     // memberPresences: any[]
     // voiceChannelUsers: any[];
   }) {
@@ -175,6 +224,10 @@ class EventHandlers {
       const member = payload.members[i];
       this.client.users.setCache(member.user);
       server?.members.setCache(member);
+    }
+    for (let i = 0; i < payload.roles.length; i++) {
+      const role = payload.roles[i];
+      server?.roles.setCache(role);
     }
 
     for (let i = 0; i < payload.channels.length; i++) {
@@ -235,7 +288,7 @@ class EventHandlers {
     const server = this.client.servers.cache.get(payload.serverId);
     const member = server?.members.cache.get(payload.userId);
     if (!member) return;
-    this.client.emit("serverMemberLeft", member);
+    this.client.emit(ClientEvents.ServerMemberLeft, member);
     server?.members.cache.delete(payload.userId);
   }
   onMessageCreated(payload: { message: RawMessage }) {
@@ -244,7 +297,46 @@ class EventHandlers {
   }
   onMessageButtonClicked(payload: MessageButtonClickPayload) {
     const button = new Button(this.client, payload);
-    this.client.emit("messageButtonClick", button);
+    this.client.emit(ClientEvents.MessageButtonClick, button);
+  }
+  onServerRoleCreated(payload: RawServerRole) {
+    const server = this.client.servers.cache.get(payload.serverId);
+    const role = server?.roles.setCache(payload);
+    if (!role) return;
+    this.client.emit(ClientEvents.ServerRoleCreated, role);
+  }
+  onServerRoleDeleted(payload: { serverId: string; roleId: string }) {
+    const server = this.client.servers.cache.get(payload.serverId);
+    const role = server?.roles.cache.get(payload.roleId);
+    if (!role) return;
+    server?.roles.cache.delete(payload.roleId);
+
+    this.client.emit(ClientEvents.ServerRoleDeleted, role);
+  }
+  onServerRoleUpdated(payload: {
+    serverId: string;
+    roleId: string;
+    updated: Partial<RawServerRole>;
+  }) {
+    const server = this.client.servers.cache.get(payload.serverId);
+    const role = server?.roles.cache.get(payload.roleId);
+    if (!role) return;
+
+    updateClass<ServerRole>(role, payload.updated);
+
+    this.client.emit(ClientEvents.ServerRoleUpdated, role);
+  }
+  onServerRoleOrderUpdated(payload: { serverId: string; roleIds: string[] }) {
+    const server = this.client.servers.cache.get(payload.serverId);
+
+    for (let i = 0; i < payload.roleIds.length; i++) {
+      const roleId = payload.roleIds[i];
+      const role = server?.roles.cache.get(roleId);
+      if (!role) continue;
+      role.order = i + 1;
+    }
+
+    this.client.emit(ClientEvents.ServerRoleOrderUpdated, server?.roles!);
   }
 }
 
@@ -281,8 +373,11 @@ export class Server {
   id: string;
   name: string;
   avatar?: string;
+  defaultRoleId: string;
+  createdById: string;
 
   members: ServerMembers;
+  roles: ServerRoles;
   constructor(client: Client, server: RawServer) {
     this.client = client;
 
@@ -290,10 +385,49 @@ export class Server {
     this.name = server.name;
     this.avatar = server.avatar;
     this.members = new ServerMembers(this.client);
+    this.roles = new ServerRoles(this.client);
+    this.defaultRoleId = server.defaultRoleId;
+    this.createdById = server.createdById;
   }
 
   async banMember(userId: string) {
     return banServerMember(this.client, this.id, userId);
+  }
+}
+
+export class ServerRoles {
+  client: Client;
+  cache: Collection<string, ServerRole>;
+  constructor(client: Client) {
+    this.client = client;
+    this.cache = new Collection();
+  }
+  setCache(rawServerRole: RawServerRole) {
+    const server = new ServerRole(this.client, rawServerRole);
+    this.cache.set(server.id, server);
+    return server;
+  }
+}
+
+export class ServerRole {
+  client: Client;
+  id: string;
+  name: string;
+  permissions: number;
+  hexColor: string;
+  server: Server;
+  order: number;
+  isDefaultRole?: boolean;
+  constructor(client: Client, role: RawServerRole) {
+    this.client = client;
+    this.server = this.client.servers.cache.get(role.serverId)!;
+
+    this.id = role.id;
+    this.name = role.name;
+    this.permissions = role.permissions;
+    this.hexColor = role.hexColor;
+    this.order = role.order;
+    this.isDefaultRole = this.server.defaultRoleId === this.id;
   }
 }
 
@@ -315,10 +449,14 @@ export class ServerMember {
   id: string;
   user: User;
   server: Server;
+  roleIds: string[];
+  nickname?: string | null;
 
   constructor(client: Client, member: RawServerMember) {
     this.client = client;
     this.id = member.user.id;
+    this.roleIds = member.roleIds;
+    this.nickname = member.nickname;
 
     this.user = this.client.users.cache.get(member.user.id)!;
     this.server = this.client.servers.cache.get(member.serverId)!;
@@ -328,6 +466,40 @@ export class ServerMember {
   }
   async ban() {
     return banServerMember(this.client, this.server.id, this.user.id);
+  }
+  get roles() {
+    return this.roleIds
+      .map((id) => this.server.roles.cache.get(id)!)
+      .filter(Boolean);
+  }
+
+  permissions(this: ServerMember) {
+    const defaultRoleId = this.server?.defaultRoleId;
+    const defaultRole = this.server.roles.cache.get(defaultRoleId!);
+
+    let currentPermissions = defaultRole?.permissions || 0;
+
+    const memberRoles = this.roles;
+    for (let i = 0; i < memberRoles.length; i++) {
+      const role = memberRoles[i];
+      currentPermissions = addBit(currentPermissions, role?.permissions || 0);
+    }
+
+    return currentPermissions;
+  }
+
+  hasPermission(
+    permission: AvailablePermissions,
+    ignoreAdmin = false,
+    ignoreCreator = false
+  ) {
+    if (!ignoreCreator) {
+      if (this.server.createdById === this.user.id) return true;
+    }
+    if (!ignoreAdmin) {
+      if (hasBit(this.permissions(), RolePermissions.ADMIN)) return true;
+    }
+    return hasBit(this.permissions(), permission);
   }
 }
 
