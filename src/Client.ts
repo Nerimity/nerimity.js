@@ -845,6 +845,9 @@ export class Button {
   user?: User;
   channel: Channel;
 
+  data?: Record<string, string>;
+  type: "modal_click" | "button_click";
+
   constructor(client: Client, payload: MessageButtonClickPayload) {
     this.client = client;
 
@@ -855,6 +858,8 @@ export class Button {
     this.user = this.client.users.cache.get(this.userId);
 
     this.channel = client.channels.cache.get(this.channelId)!;
+    this.data = payload.data;
+    this.type = payload.type;
   }
 
   async respond(opts?: ButtonCallback) {

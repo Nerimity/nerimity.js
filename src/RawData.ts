@@ -25,6 +25,8 @@ export interface MessageButtonClickPayload {
   channelId: string;
   buttonId: string;
   userId: string;
+  type: "modal_click" | "button_click";
+  data?: Record<string, string>;
 }
 
 export interface RawServer {
