@@ -80,18 +80,28 @@ export interface ButtonCallbackDropdownItem {
 }
 
 export interface ButtonCallbackTextComponent {
+  id: string;
   type: "text";
   content: string;
 }
 
 export interface ButtonCallbackDropdownComponent {
+  id: string;
+  label?: string;
   type: "dropdown";
   items: ButtonCallbackDropdownItem[];
+}
+export interface ButtonCallbackInputComponent {
+  id: string;
+  label?: string;
+  type: "input";
+  placeholder: string;
 }
 
 export type ButtonCallbackComponent =
   | ButtonCallbackTextComponent
-  | ButtonCallbackDropdownComponent;
+  | ButtonCallbackDropdownComponent
+  | ButtonCallbackInputComponent;
 
 export interface ButtonCallbackBase {
   title?: string;
