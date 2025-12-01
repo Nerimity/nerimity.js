@@ -74,7 +74,43 @@ export function deleteMessage(opts: DeleteMessageOpts) {
   });
 }
 
-interface ButtonClickCallbackOpts {
+export interface ButtonCallbackDropdownItem {
+  id: string;
+  label: string;
+}
+
+export interface ButtonCallbackTextComponent {
+  type: "text";
+  content: string;
+}
+
+export interface ButtonCallbackDropdownComponent {
+  type: "dropdown";
+  items: ButtonCallbackDropdownItem[];
+}
+
+export type ButtonCallbackComponent =
+  | ButtonCallbackTextComponent
+  | ButtonCallbackDropdownComponent;
+
+export interface ButtonCallbackBase {
+  title?: string;
+  buttonLabel?: string;
+}
+
+export interface ButtonCallbackContent extends ButtonCallbackBase {
+  content: string;
+  components?: ButtonCallbackComponent[];
+}
+
+export interface ButtonCallbackComponents extends ButtonCallbackBase {
+  components: ButtonCallbackComponent[];
+  content?: string;
+}
+
+export type ButtonCallback = ButtonCallbackContent | ButtonCallbackComponents;
+
+export type ButtonClickCallbackOpts = {
   client: Client;
 
   buttonId: string;
@@ -82,9 +118,8 @@ interface ButtonClickCallbackOpts {
   messageId: string;
 
   userId: string;
-  title?: string;
-  content?: string;
-}
+  data?: ButtonCallback;
+};
 
 export function buttonClickCallback(opts: ButtonClickCallbackOpts) {
   return request({
@@ -96,9 +131,8 @@ export function buttonClickCallback(opts: ButtonClickCallbackOpts) {
     ),
     method: "POST",
     body: {
+      ...(opts.data ? opts.data : {}),
       userId: opts.userId,
-      title: opts.title,
-      content: opts.content,
     },
     useToken: true,
   }).catch((err) => {

@@ -22,7 +22,9 @@ import {
   RawUser,
 } from "./RawData";
 import {
+  ButtonCallback,
   buttonClickCallback,
+  ButtonClickCallbackOpts,
   deleteMessage,
   editMessage,
   postMessage,
@@ -855,15 +857,14 @@ export class Button {
     this.channel = client.channels.cache.get(this.channelId)!;
   }
 
-  async respond(opts?: { title?: string; content?: string }) {
+  async respond(opts?: ButtonCallback) {
     await buttonClickCallback({
       client: this.client,
       buttonId: this.id,
       channelId: this.channelId,
       messageId: this.messageId,
       userId: this.userId,
-      title: opts?.title,
-      content: opts?.content,
+      data: opts,
     });
   }
 }
