@@ -25,6 +25,7 @@ export default [
 
   {
     rules: {
+      "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
       "indent": ["error", 2],
       "linebreak-style": ["error", "windows"],
       "semi": ["error", "always"],
