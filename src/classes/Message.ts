@@ -20,7 +20,9 @@ export interface MessageOpts {
   replyToMessageIds?: string[];
   mentionReplies?: boolean;
 }
-
+interface EditMessageOpts {
+  htmlEmbed?: string;
+}
 export class Message {
   client: Client;
   id: string;
@@ -79,12 +81,13 @@ export class Message {
     opts.replyToMessageIds = [this.id];
     return this.channel.send(content, opts);
   }
-  async edit(content: string) {
+  async edit(content: string, opts?: EditMessageOpts) {
     const RawMessage = await editMessage({
       client: this.client,
       channelId: this.channel.id,
       messageId: this.id,
       content: content,
+      htmlEmbed: opts?.htmlEmbed,
     });
     const message = new Message(this.client, RawMessage);
     return message;

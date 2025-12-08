@@ -44,6 +44,7 @@ interface EditMessageOpts {
   channelId: string;
   messageId: string;
   content: string;
+  htmlEmbed?: string;
 }
 
 export function editMessage(opts: EditMessageOpts) {
@@ -51,7 +52,7 @@ export function editMessage(opts: EditMessageOpts) {
     client: opts.client,
     url: ServiceEndpoints.EditMessage(opts.channelId, opts.messageId),
     method: "PATCH",
-    body: { content: opts.content },
+    body: { content: opts.content, htmlEmbed: opts.htmlEmbed },
     useToken: true,
   }).catch((err) => {
     throw err.message;
