@@ -4,11 +4,16 @@ import { Server } from "./classes/Server";
 import { ServerChannel } from "./classes/ServerChannel";
 import { ServerMember } from "./classes/ServerMember";
 import { ServerRole, ServerRoles } from "./classes/ServerRole";
+import { Reaction } from "./classes/Reaction";
+import { User } from "./classes/User";
 
 export const ClientEvents = {
   Ready: "ready",
   MessageCreate: "messageCreate",
   MessageUpdate: "messageUpdate",
+  MessageDelete: "messageDelete",
+  MessageReactionAdded: "messageReactionAdded",
+  MessageReactionRemoved: "messageReactionRemoved",
   ServerMemberLeft: "serverMemberLeft",
   ServerMemberJoined: "serverMemberJoined",
   ServerMemberUpdated: "serverMemberUpdated",
@@ -28,6 +33,9 @@ export type ClientEventMap = {
   ready: () => void;
   messageCreate: (message: Message) => void;
   messageUpdate: (message: Message) => void;
+  messageDelete: (data: { messageId: string; channelId: string }) => void;
+  messageReactionAdded: (data: Reaction, user?: User) => void;
+  messageReactionRemoved: (data: Reaction, user?: User) => void;
   serverMemberLeft: (member: ServerMember) => void;
   serverMemberJoined: (member: ServerMember) => void;
   serverMemberUpdated: (member: ServerMember) => void;
@@ -84,6 +92,9 @@ export const SocketServerEvents = {
   SERVER_ORDER_UPDATED: "server:order_updated",
 
   MESSAGE_BUTTON_CLICKED: "message:button_clicked",
+
+  MESSAGE_REACTION_ADDED: "message:reaction_added",
+  MESSAGE_REACTION_REMOVED: "message:reaction_removed",
 
   CHANNEL_TYPING: "channel:typing",
   MESSAGE_CREATED: "message:created",

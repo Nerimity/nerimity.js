@@ -15,6 +15,8 @@ import {
   RawServer,
   RawServerMember,
   RawServerRole,
+  ReactionAddedPayload,
+  ReactionRemovedPayload,
 } from "../RawData";
 
 import { path, updatePath } from "../services/serviceEndpoints";
@@ -28,9 +30,10 @@ import { Servers } from "./Server";
 import { Posts } from "./Post";
 import { ServerMember } from "./ServerMember";
 import { ServerChannel } from "./ServerChannel";
-import { Message } from "./Message";
+import { Messages } from "./Message";
 import { ServerRole } from "./ServerRole";
 import { Channels } from "./Channels";
+import { Reaction } from "./Reaction";
 
 export const Events = ClientEvents;
 
@@ -42,8 +45,9 @@ export class Client extends EventEmitter<ClientEventMap> {
   channels: Channels;
   servers: Servers;
   posts: Posts;
+  messages: Messages;
 
-  constructor(opts?: { urlOverride?: string }) {
+  constructor(opts?: { urlOverride?: string; messageCacheLimit?: number }) {
     super();
     if (opts?.urlOverride) {
       updatePath(opts.urlOverride);
@@ -56,6 +60,7 @@ export class Client extends EventEmitter<ClientEventMap> {
     this.users = new Users(this);
     this.servers = new Servers(this);
     this.posts = new Posts(this);
+    this.messages = new Messages(this, opts?.messageCacheLimit);
     new EventHandlers(this);
   }
 
@@ -78,6 +83,10 @@ class EventHandlers {
     client.socket.on(SocketServerEvents.CONNECT, this.onConnect.bind(this));
     client.socket.on(
       SocketServerEvents.USER_AUTHENTICATED,
+      this.onAuthenticated.bind(this)
+    );
+    client.socket.on(
+      SocketServerEvents.FRIEND_REQUEST_ACCEPTED,
       this.onAuthenticated.bind(this)
     );
 
@@ -122,6 +131,16 @@ class EventHandlers {
     );
 
     client.socket.on(
+      SocketServerEvents.MESSAGE_UPDATED,
+      this.onMessageUpdated.bind(this)
+    );
+
+    client.socket.on(
+      SocketServerEvents.MESSAGE_DELETED,
+      this.onMessageDeleted.bind(this)
+    );
+
+    client.socket.on(
       SocketServerEvents.MESSAGE_BUTTON_CLICKED,
       this.onMessageButtonClicked.bind(this)
     );
@@ -140,6 +159,14 @@ class EventHandlers {
     client.socket.on(
       SocketServerEvents.SERVER_ROLE_ORDER_UPDATED,
       this.onServerRoleOrderUpdated.bind(this)
+    );
+    client.socket.on(
+      SocketServerEvents.MESSAGE_REACTION_ADDED,
+      this.onMessageReactionAdded.bind(this)
+    );
+    client.socket.on(
+      SocketServerEvents.MESSAGE_REACTION_REMOVED,
+      this.onMessageReactionRemoved.bind(this)
     );
   }
   onConnect() {
@@ -281,8 +308,34 @@ class EventHandlers {
     server?.members.cache.delete(payload.userId);
   }
   onMessageCreated(payload: { message: RawMessage }) {
-    const message = new Message(this.client, payload.message);
+    const message = this.client.messages.setCache(payload.message);
     this.client.emit(ClientEvents.MessageCreate, message);
+  }
+  onMessageUpdated(payload: {
+    channelId: string;
+    messageId: string;
+    updated: Partial<RawMessage>;
+  }) {
+    const message = this.client.messages.cache.get(payload.messageId);
+    const updated = payload.updated;
+
+    if (message) {
+      message._update(updated);
+    }
+    if (message) {
+      this.client.emit(ClientEvents.MessageUpdate, message);
+    }
+  }
+  onMessageDeleted(payload: {
+    channelId: string;
+    messageId: string;
+    deletedAttachmentCount: number;
+  }) {
+    this.client.messages.cache.delete(payload.messageId);
+    this.client.emit(ClientEvents.MessageDelete, {
+      messageId: payload.messageId,
+      channelId: payload.channelId,
+    });
   }
   onMessageButtonClicked(payload: MessageButtonClickPayload) {
     const button = new MessageButton(this.client, payload);
@@ -326,6 +379,16 @@ class EventHandlers {
     }
 
     this.client.emit(ClientEvents.ServerRoleOrderUpdated, server?.roles!);
+  }
+  onMessageReactionAdded(payload: ReactionAddedPayload) {
+    const reaction = new Reaction(this.client, payload);
+    const user = this.client.users.cache.get(payload.reactedByUserId);
+    this.client.emit(ClientEvents.MessageReactionAdded, reaction, user);
+  }
+  onMessageReactionRemoved(payload: ReactionRemovedPayload) {
+    const reaction = new Reaction(this.client, payload);
+    const user = this.client.users.cache.get(payload.reactionRemovedByUserId);
+    this.client.emit(ClientEvents.MessageReactionRemoved, reaction, user);
   }
 }
 

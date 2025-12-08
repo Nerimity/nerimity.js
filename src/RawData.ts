@@ -12,6 +12,14 @@ export interface AuthenticatedPayload {
   lastSeenServerChannelIds: Record<string, number>; // { [channelId]: timestamp }
 }
 
+export interface RawMessageReaction {
+  name: string;
+  emojiId?: string | null;
+  gif?: boolean;
+
+  reacted: boolean;
+  count: number;
+}
 export interface RawBotCommand {
   name: string;
   description: string;
@@ -29,6 +37,24 @@ export interface MessageButtonClickPayload {
   data?: Record<string, string>;
 }
 
+export interface ReactionAddedPayload {
+  messageId: string;
+  channelId: string;
+  count: number;
+  reactedByUserId: string;
+  emojiId?: string;
+  name: string;
+  gif?: boolean;
+}
+export interface ReactionRemovedPayload {
+  messageId: string;
+  channelId: string;
+  count: number;
+  reactionRemovedByUserId: string;
+  emojiId?: string;
+  name: string;
+  gif?: boolean;
+}
 export interface RawServer {
   id: string;
   name: string;

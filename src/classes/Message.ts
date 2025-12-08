@@ -7,10 +7,25 @@ import {
 import { deleteMessage, editMessage } from "../services/MessageService";
 import { AllChannel } from "../types";
 import { Client } from "./Client";
+import { Collection } from "./Collection";
 import { User } from "./User";
 
 const UserMentionRegex = /\[@:([0-9]+)\]/gm;
 const CommandRegex = /^(\/[^:\s]*):(\d+)( .*)?$/m;
+
+export class Messages {
+  client: Client;
+  cache: Collection<string, Message>;
+  constructor(client: Client, limit = 1000) {
+    this.client = client;
+    this.cache = new Collection({ limit });
+  }
+  setCache(rawMessage: RawMessage) {
+    const message = new Message(this.client, rawMessage);
+    this.cache.set(message.id, message);
+    return message;
+  }
+}
 
 export interface MessageOpts {
   htmlEmbed?: string;
@@ -34,6 +49,7 @@ export class Message {
   user: User;
   mentions: User[] = [];
   command?: { name: string; args: string[] };
+  editedAt?: number;
   constructor(client: Client, message: RawMessage) {
     this.client = client;
 
@@ -44,6 +60,7 @@ export class Message {
     this.type = message.type;
     this.createdAt = message.createdAt;
     this.user = this.client.users.cache.get(message.createdBy.id)!;
+    this.editedAt = message.editedAt;
 
     const cmd = message.content?.match(CommandRegex);
     if (cmd?.[2] === this.client.user?.id) {
@@ -65,12 +82,7 @@ export class Message {
     }
 
     if (this.content) {
-      const mentionIds = [...this.content.matchAll(UserMentionRegex)].map(
-        (exp) => exp[1]
-      );
-      this.mentions = mentionIds
-        .map((id) => this.client.users.cache.get(id)!)
-        .filter((u) => u);
+      this._updateMentions(this.content);
     }
   }
   get member() {
@@ -98,6 +110,23 @@ export class Message {
       client: this.client,
       messageId: this.id,
     });
+  }
+
+  private _updateMentions(content: string) {
+    const mentionIds = [...content.matchAll(UserMentionRegex)].map(
+      (exp) => exp[1]
+    );
+    this.mentions = mentionIds
+      .map((id) => this.client.users.cache.get(id)!)
+      .filter((u) => u);
+  }
+  _update(update: Partial<RawMessage>) {
+    this.content = update.content || this.content;
+    this.editedAt = update.editedAt || this.editedAt;
+    if (this.content) {
+      this._updateMentions(this.content);
+    }
+    this.client.messages.cache.set(this.id, this);
   }
   toString() {
     return `[q:${this.id}]`;
