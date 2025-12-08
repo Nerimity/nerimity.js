@@ -5,7 +5,7 @@ import {
   RawMessageButton,
 } from "../RawData";
 import { deleteMessage, editMessage } from "../services/MessageService";
-import { AllChannel } from "./Channel";
+import { AllChannel } from "../types";
 import { Client } from "./Client";
 import { User } from "./User";
 

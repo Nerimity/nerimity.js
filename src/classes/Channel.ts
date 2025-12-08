@@ -4,27 +4,8 @@ import {
   postMessage,
 } from "../services/MessageService";
 import { Client } from "./Client";
-import { Collection } from "./Collection";
 import { Message, MessageOpts } from "./Message";
 import { Server } from "./Server";
-import { ServerChannel } from "./ServerChannel";
-
-export class Channels {
-  client: Client;
-  cache: Collection<string, AllChannel>;
-  constructor(client: Client) {
-    this.client = client;
-    this.cache = new Collection();
-  }
-  setCache(rawChannel: { id: string } & Omit<Partial<RawChannel>, "id">) {
-    let channel: AllChannel;
-    if (rawChannel.serverId)
-      channel = new ServerChannel(this.client, rawChannel as RawChannel);
-    else channel = new Channel(this.client, rawChannel as RawChannel);
-    this.cache.set(channel.id, channel);
-    return channel;
-  }
-}
 
 export class Channel {
   client: Client;
@@ -70,5 +51,3 @@ export class Channel {
     });
   }
 }
-
-export type AllChannel = ServerChannel | Channel;

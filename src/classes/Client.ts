@@ -23,13 +23,14 @@ import { updateCommands as postUpdateCommands } from "../services/ApplicationSer
 import { MessageButton } from "./MessageButton";
 import { ClientUser } from "./ClientUser";
 import { Users } from "./User";
-import { Channels } from "./Channel";
+
 import { Servers } from "./Server";
 import { Posts } from "./Post";
 import { ServerMember } from "./ServerMember";
 import { ServerChannel } from "./ServerChannel";
 import { Message } from "./Message";
 import { ServerRole } from "./ServerRole";
+import { Channels } from "./Channels";
 
 export const Events = ClientEvents;
 
