@@ -1,4 +1,4 @@
-import { Client } from "../Client";
+import { Client } from "../classes/Client";
 import { request } from "./MessageService";
 import { ServiceEndpoints } from "./serviceEndpoints";
 

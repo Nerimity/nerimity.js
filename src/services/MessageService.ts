@@ -1,4 +1,4 @@
-import { Client } from "../Client";
+import { Client } from "../classes/Client";
 import { RawMessage, RawMessageButton } from "../RawData";
 import { ServiceEndpoints } from "./serviceEndpoints";
 import fetch from "node-fetch";
@@ -184,7 +184,7 @@ export async function request<T>(opts: RequestOpts): Promise<T> {
       return Promise.reject(json);
     }
     return json;
-  } catch (e) {
+  } catch {
     throw { message: text };
   }
 }

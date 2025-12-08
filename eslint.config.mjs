@@ -11,7 +11,7 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.node,
-        ...globals.es2021
+        ...globals.es2021,
       },
       parserOptions: {
         ecmaVersion: "latest",
@@ -25,12 +25,13 @@ export default [
 
   {
     rules: {
+      "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
-      "indent": ["error", 2],
+      indent: ["error", 2],
       "linebreak-style": ["error", "windows"],
-      "semi": ["error", "always"],
-      
-      "quotes": ["error", "double"], 
+      semi: ["error", "always"],
+
+      quotes: ["error", "double"],
     },
   },
 ];

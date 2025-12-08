@@ -19,8 +19,8 @@ export interface EmitPayload {
 }
 function findRunningServer(appId: string) {
   return new Promise<null | WebSocket>((res) => {
-    let servers: WebSocket[] = [];
-    let id = setTimeout(() => {
+    const servers: WebSocket[] = [];
+    const id = setTimeout(() => {
       res(null);
     }, 5000);
     for (let port = PORT_RANGES[0]; port < PORT_RANGES[1] + 1; port++) {
@@ -42,7 +42,7 @@ function findRunningServer(appId: string) {
         }
       });
 
-      server.on("error", (err) => {});
+      server.on("error", () => {});
     }
   });
 }
@@ -79,7 +79,7 @@ export class RPCClient extends EventEmitter<EventMap> {
 const jsonParseCatch = (json: string) => {
   try {
     return JSON.parse(json);
-  } catch (e) {
+  } catch {
     return null;
   }
 };

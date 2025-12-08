@@ -1,5 +1,5 @@
-export { Client, Events } from "./Client";
-export { AttachmentBuilder } from "./Attachment";
-export { RPCClient, EmitPayload } from "./RPCClient";
-export { WebhookBuilder } from "./Webhooks";
+export { Client, Events } from "./classes/Client";
+export { AttachmentBuilder } from "./classes/Attachment";
+export { RPCClient, EmitPayload } from "./classes/RPCClient";
+export { WebhookBuilder } from "./classes/Webhooks";
 export { RolePermissions } from "./bitwise";

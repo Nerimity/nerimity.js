@@ -1,12 +1,9 @@
-import {
-  Button,
-  Message,
-  Server,
-  ServerChannel,
-  ServerMember,
-  ServerRole,
-  ServerRoles,
-} from "./Client";
+import { MessageButton } from "./classes/MessageButton";
+import { Message } from "./classes/Message";
+import { Server } from "./classes/Server";
+import { ServerChannel } from "./classes/ServerChannel";
+import { ServerMember } from "./classes/ServerMember";
+import { ServerRole, ServerRoles } from "./classes/ServerRole";
 
 export const ClientEvents = {
   Ready: "ready",
@@ -36,7 +33,7 @@ export type ClientEventMap = {
   serverMemberUpdated: (member: ServerMember) => void;
   serverJoined: (server: Server) => void;
   serverLeft: (server: Server) => void;
-  messageButtonClick: (button: Button) => void;
+  messageButtonClick: (button: MessageButton) => void;
   serverChannelCreated: (channel: ServerChannel) => void;
   serverChannelUpdated: (channel: ServerChannel) => void;
   serverChannelDeleted: (data: { serverId: string; channelId: string }) => void;
