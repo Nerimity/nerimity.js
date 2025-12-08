@@ -1,5 +1,9 @@
 import { RawServer } from "../RawData";
-import { banServerMember } from "../services/ServerService";
+import {
+  banServerMember,
+  kickServerMember,
+  unbanServerMember,
+} from "../services/ServerService";
 import { Client } from "./Client";
 import { Collection } from "./Collection";
 import { ServerMembers } from "./ServerMember";
@@ -43,5 +47,11 @@ export class Server {
 
   async banMember(userId: string) {
     return banServerMember(this.client, this.id, userId);
+  }
+  async unbanMember(userId: string) {
+    return unbanServerMember(this.client, this.id, userId);
+  }
+  async kickMember(userId: string) {
+    return kickServerMember(this.client, this.id, userId);
   }
 }

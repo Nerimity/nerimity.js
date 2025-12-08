@@ -5,7 +5,11 @@ import {
   RolePermissions,
 } from "../bitwise";
 import { RawServerMember } from "../RawData";
-import { banServerMember } from "../services/ServerService";
+import {
+  banServerMember,
+  kickServerMember,
+  unbanServerMember,
+} from "../services/ServerService";
 import { Client } from "./Client";
 import { Collection } from "./Collection";
 import { Server } from "./Server";
@@ -47,6 +51,12 @@ export class ServerMember {
   }
   async ban() {
     return banServerMember(this.client, this.server.id, this.user.id);
+  }
+  async unban() {
+    return unbanServerMember(this.client, this.server.id, this.user.id);
+  }
+  async kick() {
+    return kickServerMember(this.client, this.server.id, this.user.id);
   }
   get roles() {
     return this.roleIds

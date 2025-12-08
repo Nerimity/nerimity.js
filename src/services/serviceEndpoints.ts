@@ -31,6 +31,9 @@ const ButtonClickCallback = (
 const serverMemberBan = (serverId: string, userId: string) =>
   `${BaseUrl}/servers/${serverId}/bans/${userId}`;
 
+const serverMemberKick = (serverId: string, userId: string) =>
+  `${BaseUrl}/servers/${serverId}/members/${userId}/kick`;
+
 export const ServiceEndpoints = {
   GetMessages,
   PostMessage,
@@ -42,4 +45,5 @@ export const ServiceEndpoints = {
   BotCommands,
   ButtonClickCallback,
   serverMemberBan,
+  serverMemberKick,
 };

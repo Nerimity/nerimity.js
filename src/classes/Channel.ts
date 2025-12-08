@@ -1,5 +1,8 @@
 import { ChannelType, RawChannel } from "../RawData";
-import { postMessage } from "../services/MessageService";
+import {
+  deleteMessage as requestMessageDelete,
+  postMessage,
+} from "../services/MessageService";
 import { Client } from "./Client";
 import { Collection } from "./Collection";
 import { Message, MessageOpts } from "./Message";
@@ -58,6 +61,13 @@ export class Channel {
   }
   toString() {
     return `[#:${this.id}]`;
+  }
+  async deleteMessage(messageId: string) {
+    return requestMessageDelete({
+      channelId: this.id,
+      client: this.client,
+      messageId: messageId,
+    });
   }
 }
 
