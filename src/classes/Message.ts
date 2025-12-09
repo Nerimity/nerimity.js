@@ -16,9 +16,9 @@ const CommandRegex = /^(\/[^:\s]*):(\d+)( .*)?$/m;
 export class Messages {
   client: Client;
   cache: Collection<string, Message>;
-  constructor(client: Client, limit = 1000) {
+  constructor(client: Client, limit?: number) {
     this.client = client;
-    this.cache = new Collection({ limit });
+    this.cache = new Collection({ limit: limit ?? 1000 });
   }
   setCache(rawMessage: RawMessage) {
     const message = new Message(this.client, rawMessage);

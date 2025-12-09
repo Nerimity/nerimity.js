@@ -7,6 +7,7 @@ export class Collection<K, V> extends Map<K, V> {
   }
 
   set(key: K, value: V): this {
+    if (this.limit === 0) return this;
     if (super.has(key)) {
       super.delete(key);
     }
