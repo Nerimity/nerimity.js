@@ -49,8 +49,13 @@ export class ServerMember {
   toString() {
     return `[@:${this.id}]`;
   }
-  async ban() {
-    return banServerMember(this.client, this.server.id, this.user.id);
+  async ban(opts?: { reason?: string }) {
+    return banServerMember(
+      this.client,
+      this.server.id,
+      this.user.id,
+      opts?.reason
+    );
   }
   async unban() {
     return unbanServerMember(this.client, this.server.id, this.user.id);

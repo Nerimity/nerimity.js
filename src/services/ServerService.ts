@@ -5,13 +5,15 @@ import { ServiceEndpoints } from "./serviceEndpoints";
 export async function banServerMember(
   client: Client,
   serverId: string,
-  userId: string
+  userId: string,
+  reason?: string
 ) {
   return await request<any>({
     client: client,
     url: ServiceEndpoints.serverMemberBan(serverId, userId),
     method: "POST",
     useToken: true,
+    body: { reason },
   }).catch((err) => {
     throw new Error(`Failed to ban server member. ${err.message}`);
   });

@@ -45,8 +45,8 @@ export class Server {
     this.createdById = server.createdById;
   }
 
-  async banMember(userId: string) {
-    return banServerMember(this.client, this.id, userId);
+  async banMember(userId: string, opts?: { reason?: string }) {
+    return banServerMember(this.client, this.id, userId, opts?.reason);
   }
   async unbanMember(userId: string) {
     return unbanServerMember(this.client, this.id, userId);
