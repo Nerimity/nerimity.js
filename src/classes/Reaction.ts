@@ -38,6 +38,7 @@ export class Reaction {
     this.name = reaction.name;
     this.emojiId = reaction.emojiId || undefined;
   }
+  // TODO: add fetch
   // fetch() {
 
   // }
