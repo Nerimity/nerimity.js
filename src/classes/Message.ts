@@ -50,9 +50,11 @@ export class Message {
   mentions: User[] = [];
   command?: { name: string; args: string[] };
   editedAt?: number;
+  raw: RawMessage;
   constructor(client: Client, message: RawMessage) {
     this.client = client;
 
+    this.raw = message;
     this.id = message.id;
     this.channelId = message.channelId;
     this.channel = client.channels.cache.get(this.channelId)!;
