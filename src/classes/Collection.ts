@@ -35,4 +35,7 @@ export class Collection<K, V> extends Map<K, V> {
 
     return value;
   }
+  first(): V | undefined {
+    return this.keys().next().value && this.get(this.keys().next().value!);
+  }
 }

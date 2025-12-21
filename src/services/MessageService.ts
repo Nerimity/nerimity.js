@@ -3,6 +3,28 @@ import { RawMessage, RawMessageButton } from "../RawData";
 import { ServiceEndpoints } from "./serviceEndpoints";
 import fetch from "node-fetch";
 
+interface FetchMessageOpts {
+  client: Client;
+  channelId: string;
+  messageId: string;
+}
+
+export async function fetchMessage(opts: FetchMessageOpts) {
+  return await request<RawMessage | null>({
+    client: opts.client,
+    url: ServiceEndpoints.EditMessage(opts.channelId, opts.messageId),
+    method: "GET",
+
+    useToken: true,
+  }).catch((err) => {
+    const error = new Error(
+      `Failed to get message. ${JSON.stringify(err.message)}`
+    );
+    (error as unknown as { raw: string }).raw = err.message;
+    throw error;
+  });
+}
+
 interface PostMessageOpts {
   client: Client;
   channelId: string;

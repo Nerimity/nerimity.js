@@ -4,7 +4,11 @@ import {
   RawMessage,
   RawMessageButton,
 } from "../RawData";
-import { deleteMessage, editMessage } from "../services/MessageService";
+import {
+  deleteMessage,
+  editMessage,
+  fetchMessage,
+} from "../services/MessageService";
 import { AllChannel } from "../types";
 import { Client } from "./Client";
 import { Collection } from "./Collection";
@@ -23,6 +27,24 @@ export class Messages {
   setCache(rawMessage: RawMessage) {
     const message = new Message(this.client, rawMessage);
     this.cache.set(message.id, message);
+    return message;
+  }
+  async fetch(channelId: string, messageId: string, force = false) {
+    if (!force) {
+      const message = this.cache.get(messageId);
+      if (message) return message;
+    }
+    const rawMessage = await fetchMessage({
+      channelId: channelId,
+      client: this.client,
+      messageId: messageId,
+    });
+
+    if (!rawMessage) return undefined;
+
+    const message = new Message(this.client, rawMessage);
+    this.cache.set(message.id, message);
+
     return message;
   }
 }
@@ -50,6 +72,7 @@ export class Message {
   mentions: User[] = [];
   command?: { name: string; args: string[] };
   editedAt?: number;
+  replies: Collection<string, Message> = new Collection();
   raw: RawMessage;
   constructor(client: Client, message: RawMessage) {
     this.client = client;
@@ -63,6 +86,17 @@ export class Message {
     this.createdAt = message.createdAt;
     this.user = this.client.users.cache.get(message.createdBy.id)!;
     this.editedAt = message.editedAt;
+
+    if (message.replyMessages?.length) {
+      message.replyMessages.forEach((reply) => {
+        if (reply.replyToMessage) {
+          this.replies.set(
+            reply.replyToMessage.id,
+            new Message(client, reply.replyToMessage)
+          );
+        }
+      });
+    }
 
     const cmd = message.content?.match(CommandRegex);
     if (cmd?.[2] === this.client.user?.id) {

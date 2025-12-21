@@ -5,6 +5,7 @@ import {
 } from "../services/MessageService";
 import { Channel } from "./Channel";
 import { Client } from "./Client";
+import { Message } from "./Message";
 import { User } from "./User";
 
 export class MessageButton {
@@ -13,6 +14,7 @@ export class MessageButton {
 
   userId: string;
   messageId: string;
+  message?: Message;
   channelId: string;
 
   user?: User;
@@ -20,6 +22,8 @@ export class MessageButton {
 
   data?: Record<string, string>;
   type: "modal_click" | "button_click";
+
+  partial: boolean;
 
   constructor(client: Client, payload: MessageButtonClickPayload) {
     this.client = client;
@@ -33,6 +37,24 @@ export class MessageButton {
     this.channel = client.channels.cache.get(this.channelId)!;
     this.data = payload.data;
     this.type = payload.type;
+
+    this.partial = true;
+
+    this.message = this.client.messages.cache.get(this.messageId);
+
+    if (this.message) {
+      this.partial = false;
+    }
+  }
+
+  async fetch() {
+    if (this.partial) {
+      this.message = await this.client.messages.fetch(
+        this.channelId,
+        this.messageId
+      );
+      this.partial = false;
+    }
   }
 
   async respond(opts?: ButtonCallback) {

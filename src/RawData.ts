@@ -93,18 +93,70 @@ export enum MessageType {
   BAN_USER = 4,
 }
 
+export type AttachmentProviders = "local" | "google_drive";
+
+export interface RawAttachment {
+  id: string;
+
+  provider?: AttachmentProviders;
+  fileId?: string;
+  mime?: string;
+  messageId?: string;
+  duration?: number;
+  path?: string;
+  width?: number;
+  height?: number;
+  createdAt?: number;
+
+  filesize?: number;
+  expireAt?: number;
+}
+
+export interface RawEmbed {
+  title?: string;
+  type?: string;
+  description?: string;
+  url: string;
+  origUrl?: string;
+  imageUrl?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+  imageMime?: string;
+
+  video?: boolean;
+  largeImage?: boolean;
+
+  // for youtube
+  uploadDate: string;
+  channelName: string;
+  domain: string;
+}
 export interface RawMessage {
   id: string;
   channelId: string;
-  silent?: string;
+  silent?: boolean;
   content?: string;
-  createdBy: RawUser;
+  createdBy: RawUser & {
+    avatarUrl?: string;
+  };
   type: MessageType;
   createdAt: number;
+  pinned?: boolean;
   editedAt?: number;
   mentions?: Array<RawUser>;
-  attachments?: Array<any>;
-  buttons?: RawMessageButton[];
+  attachments?: Array<RawAttachment>;
+  quotedMessages: Partial<RawMessage>[];
+  reactions: RawMessageReaction[];
+  htmlEmbed?: string;
+  embed?: RawEmbed | null;
+  mentionReplies?: boolean;
+  replyMessages: {
+    replyToMessage?: RawMessage;
+  }[];
+
+  buttons: RawMessageButton[];
+  roleMentions: RawServerRole[];
+  webhookId?: string;
 }
 
 export interface RawMessageButton {
