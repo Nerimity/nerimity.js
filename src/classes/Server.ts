@@ -4,6 +4,7 @@ import {
   kickServerMember,
   unbanServerMember,
 } from "../services/ServerService";
+import { AllChannel } from "../types";
 import { Client } from "./Client";
 import { Collection } from "./Collection";
 import { ServerMembers } from "./ServerMember";
@@ -30,6 +31,7 @@ export class Server {
   avatar?: string;
   defaultRoleId: string;
   createdById: string;
+  channels: Collection<string, AllChannel> = new Collection();
 
   members: ServerMembers;
   roles: ServerRoles;

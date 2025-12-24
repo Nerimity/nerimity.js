@@ -184,7 +184,11 @@ class EventHandlers {
 
     for (let i = 0; i < payload.channels.length; i++) {
       const rawChannel = payload.channels[i];
-      this.client.channels.setCache(rawChannel);
+      const channel = this.client.channels.setCache(rawChannel);
+      if ("serverId" in rawChannel && rawChannel.serverId) {
+        const server = this.client.servers.cache.get(rawChannel.serverId);
+        server?.channels.set(channel.id, channel);
+      }
     }
     for (let i = 0; i < payload.serverMembers.length; i++) {
       const member = payload.serverMembers[i];
@@ -275,9 +279,13 @@ class EventHandlers {
     }
   }
   onServerChannelDeleted(payload: { serverId: string; channelId: string }) {
-    const channel = this.client.channels.cache.has(payload.channelId);
+    const channel = this.client.channels.cache.get(payload.channelId);
     if (channel) {
       this.client.channels.cache.delete(payload.channelId);
+      
+      const server = this.client.servers.cache.get(payload.serverId);
+      server?.channels.delete(payload.channelId);
+
       this.client.emit(ClientEvents.ServerChannelDeleted, {
         channelId: payload.channelId,
         serverId: payload.serverId,
