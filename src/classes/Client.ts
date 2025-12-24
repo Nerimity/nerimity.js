@@ -258,6 +258,8 @@ class EventHandlers {
   }
   onServerChannelCreated(payload: { serverId: string; channel: RawChannel }) {
     const channel = this.client.channels.setCache(payload.channel);
+    const server = this.client.servers.cache.get(payload.serverId);
+    server?.channels.set(channel.id, channel);
     this.client.emit(
       ClientEvents.ServerChannelCreated,
       channel as ServerChannel
@@ -282,7 +284,7 @@ class EventHandlers {
     const channel = this.client.channels.cache.get(payload.channelId);
     if (channel) {
       this.client.channels.cache.delete(payload.channelId);
-      
+
       const server = this.client.servers.cache.get(payload.serverId);
       server?.channels.delete(payload.channelId);
 
