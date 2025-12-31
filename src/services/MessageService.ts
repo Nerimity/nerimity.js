@@ -16,12 +16,6 @@ export async function fetchMessage(opts: FetchMessageOpts) {
     method: "GET",
 
     useToken: true,
-  }).catch((err) => {
-    const error = new Error(
-      `Failed to get message. ${JSON.stringify(err.message)}`
-    );
-    (error as unknown as { raw: string }).raw = err.message;
-    throw error;
   });
 }
 
@@ -52,12 +46,6 @@ export async function postMessage(opts: PostMessageOpts) {
       replyToMessageIds: opts.replyToMessageIds,
     },
     useToken: true,
-  }).catch((err) => {
-    const error = new Error(
-      `Failed to send message. ${JSON.stringify(err.message)}`
-    );
-    (error as unknown as { raw: string }).raw = err.message;
-    throw error;
   });
 }
 
@@ -81,8 +69,6 @@ export function editMessage(opts: EditMessageOpts) {
       buttons: opts.buttons,
     },
     useToken: true,
-  }).catch((err) => {
-    throw err.message;
   });
 }
 
@@ -97,8 +83,6 @@ export function deleteMessage(opts: DeleteMessageOpts) {
     url: ServiceEndpoints.EditMessage(opts.channelId, opts.messageId),
     method: "DELETE",
     useToken: true,
-  }).catch((err) => {
-    throw err.message;
   });
 }
 
@@ -173,8 +157,6 @@ export function buttonClickCallback(opts: ButtonClickCallbackOpts) {
       userId: opts.userId,
     },
     useToken: true,
-  }).catch((err) => {
-    throw err.message;
   });
 }
 
@@ -189,6 +171,9 @@ interface RequestOpts {
 }
 
 export async function request<T>(opts: RequestOpts): Promise<T> {
+  const stackCapture: any = {};
+  Error.captureStackTrace(stackCapture, request);
+
   const url = new URL(opts.url);
   url.search = new URLSearchParams(opts.params || {}).toString();
 
@@ -200,7 +185,7 @@ export async function request<T>(opts: RequestOpts): Promise<T> {
       Authorization: opts.useToken ? opts.client.token! : "",
     },
   }).catch((err) => {
-    throw { message: "Could not connect to server. " + err.message };
+    throw new Error("Could not connect to server. " + err.message);
   });
 
   const text = await response.text();
@@ -209,10 +194,16 @@ export async function request<T>(opts: RequestOpts): Promise<T> {
   try {
     const json = JSON.parse(text);
     if (!response.ok) {
-      return Promise.reject(json);
+      throw new Error(JSON.stringify(json));
     }
     return json;
-  } catch {
-    throw { message: text };
+  } catch (err) {
+    if (err instanceof Error) {
+      // Remove the first line of the captured stack ("Error")
+      // and append the rest to the real error
+      const originalStack = stackCapture.stack?.split("\n").slice(1).join("\n");
+      err.stack += "\n    -- caused by --\n" + originalStack;
+    }
+    throw err;
   }
 }

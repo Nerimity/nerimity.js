@@ -14,8 +14,6 @@ export async function banServerMember(
     method: "POST",
     useToken: true,
     body: { reason },
-  }).catch((err) => {
-    throw new Error(`Failed to ban server member. ${err.message}`);
   });
 }
 
@@ -29,8 +27,6 @@ export async function unbanServerMember(
     url: ServiceEndpoints.serverMemberBan(serverId, userId),
     method: "DELETE",
     useToken: true,
-  }).catch((err) => {
-    throw new Error(`Failed to unban server member. ${err.message}`);
   });
 }
 export async function kickServerMember(
@@ -43,7 +39,5 @@ export async function kickServerMember(
     url: ServiceEndpoints.serverMemberKick(serverId, userId),
     method: "DELETE",
     useToken: true,
-  }).catch((err) => {
-    throw new Error(`Failed to kick server member. ${err.message}`);
   });
 }

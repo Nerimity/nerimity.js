@@ -30,8 +30,6 @@ export async function getPosts(client: Client) {
     url: ServiceEndpoints.GetPosts(),
     method: "GET",
     useToken: true,
-  }).catch((err) => {
-    throw new Error(`Failed to get posts. ${err.message}`);
   });
 }
 
@@ -46,8 +44,6 @@ export async function postPost(opts: PostPostOpts) {
       poll: opts.poll,
     },
     useToken: true,
-  }).catch((err) => {
-    throw new Error(`Failed to send post. ${err.message}`);
   });
 }
 
@@ -58,8 +54,6 @@ export async function editPost(opts: EditPostOpts) {
     method: "PATCH",
     body: { content: opts.content },
     useToken: true,
-  }).catch((err) => {
-    throw new Error(`Failed to edit post. ${err.message}`);
   });
 }
 
@@ -69,7 +63,5 @@ export async function deletePost(opts: DeletePostOpts) {
     url: ServiceEndpoints.DeletePost(opts.postId),
     method: "DELETE",
     useToken: true,
-  }).catch((err) => {
-    throw new Error(`Failed to delete post. ${err.message}`);
   });
 }

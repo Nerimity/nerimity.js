@@ -116,6 +116,9 @@ export class WebhookBuilder {
    * @throws If the request fails, is unauthorized, or returns invalid JSON.
    */
   public async send(content: string): Promise<any> {
+    const error = new Error();
+    Error.captureStackTrace(error, this.send);
+
     const url = `https://nerimity.com/api/webhooks/${this.channelId}/${this.token}`;
 
     try {
@@ -138,7 +141,11 @@ export class WebhookBuilder {
 
       return json;
     } catch (err: any) {
-      throw new Error(`Failed to send webhook: ${err.message}`);
+      const message = err.message || err;
+      error.message = `Failed to send webhook: ${message}`;
+      (error as any).raw = message;
+
+      throw error;
     }
   }
 }
