@@ -1,3 +1,4 @@
+import { AsyncFunctionQueue } from "../AsyncFunctionQueue";
 import { ChannelType, RawChannel } from "../RawData";
 import {
   deleteMessage as requestMessageDelete,
@@ -10,6 +11,8 @@ import { Server } from "./Server";
 export class Channel {
   client: Client;
   id: string;
+
+  messageSendQueue = new AsyncFunctionQueue();
 
   type: ChannelType;
   createdAt?: number;
@@ -26,19 +29,21 @@ export class Channel {
   }
 
   async send(content: string, opts?: MessageOpts) {
-    const RawMessage = await postMessage({
-      client: this.client,
-      channelId: this.id,
-      content: content,
-      silent: opts?.silent,
-      nerimityCdnFileId: opts?.nerimityCdnFileId,
-      htmlEmbed: opts?.htmlEmbed,
-      buttons: opts?.buttons,
-      replyToMessageIds: opts?.replyToMessageIds,
-      mentionReplies: opts?.mentionReplies,
+    return this.messageSendQueue.add(async () => {
+      const RawMessage = await postMessage({
+        client: this.client,
+        channelId: this.id,
+        content: content,
+        silent: opts?.silent,
+        nerimityCdnFileId: opts?.nerimityCdnFileId,
+        htmlEmbed: opts?.htmlEmbed,
+        buttons: opts?.buttons,
+        replyToMessageIds: opts?.replyToMessageIds,
+        mentionReplies: opts?.mentionReplies,
+      });
+      const message = new Message(this.client, RawMessage);
+      return message;
     });
-    const message = new Message(this.client, RawMessage);
-    return message;
   }
   toString() {
     return `[#:${this.id}]`;

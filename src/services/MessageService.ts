@@ -1,7 +1,6 @@
 import { Client } from "../classes/Client";
 import { RawMessage, RawMessageButton } from "../RawData";
 import { ServiceEndpoints } from "./serviceEndpoints";
-import fetch from "node-fetch";
 
 interface FetchMessageOpts {
   client: Client;
