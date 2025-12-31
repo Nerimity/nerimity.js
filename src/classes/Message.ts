@@ -59,6 +59,7 @@ export interface MessageOpts {
 }
 interface EditMessageOpts {
   htmlEmbed?: string;
+  buttons?: RawMessageButton[];
 }
 export class Message {
   client: Client;
@@ -136,6 +137,7 @@ export class Message {
       messageId: this.id,
       content: content,
       htmlEmbed: opts?.htmlEmbed,
+      buttons: opts?.buttons,
     });
     const message = new Message(this.client, RawMessage);
     return message;

@@ -67,6 +67,7 @@ interface EditMessageOpts {
   messageId: string;
   content: string;
   htmlEmbed?: string;
+  buttons?: RawMessageButton[];
 }
 
 export function editMessage(opts: EditMessageOpts) {
@@ -74,7 +75,11 @@ export function editMessage(opts: EditMessageOpts) {
     client: opts.client,
     url: ServiceEndpoints.EditMessage(opts.channelId, opts.messageId),
     method: "PATCH",
-    body: { content: opts.content, htmlEmbed: opts.htmlEmbed },
+    body: {
+      content: opts.content,
+      htmlEmbed: opts.htmlEmbed,
+      buttons: opts.buttons,
+    },
     useToken: true,
   }).catch((err) => {
     throw err.message;
