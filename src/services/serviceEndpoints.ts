@@ -1,10 +1,14 @@
 // export const path = 'http://localhost:8080';
 export let path = "https://nerimity.com";
 let BaseUrl = path + "/api";
+export let wsPath = "https://nerimity.com";
 
 export const updatePath = (newPath: string) => {
   path = newPath;
   BaseUrl = path + "/api";
+};
+export const updateWsPath = (newPath: string) => {
+  wsPath = newPath;
 };
 const GetMessages = (channelId: string) =>
   `${BaseUrl}/channels/${channelId}/messages`;
@@ -24,7 +28,7 @@ const BotCommands = () => `${BaseUrl}/applications/bot/commands`;
 const ButtonClickCallback = (
   channelId: string,
   messageId: string,
-  buttonId: string
+  buttonId: string,
 ) =>
   `${BaseUrl}/channels/${channelId}/messages/${messageId}/buttons/${buttonId}/callback`;
 

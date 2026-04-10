@@ -19,7 +19,7 @@ import {
   ReactionRemovedPayload,
 } from "../RawData";
 
-import { path, updatePath } from "../services/serviceEndpoints";
+import { wsPath, updatePath, updateWsPath } from "../services/serviceEndpoints";
 
 import { updateCommands as postUpdateCommands } from "../services/ApplicationService";
 import { MessageButton } from "./MessageButton";
@@ -47,12 +47,19 @@ export class Client extends EventEmitter<ClientEventMap> {
   posts: Posts;
   messages: Messages;
 
-  constructor(opts?: { urlOverride?: string; messageCacheLimit?: number }) {
+  constructor(opts?: {
+    wsUrlOverride?: string;
+    apiUrlOverride?: string;
+    messageCacheLimit?: number;
+  }) {
     super();
-    if (opts?.urlOverride) {
-      updatePath(opts.urlOverride);
+    if (opts?.apiUrlOverride) {
+      updatePath(opts.apiUrlOverride);
     }
-    this.socket = io(path, {
+    if (opts?.wsUrlOverride) {
+      updateWsPath(opts.wsUrlOverride);
+    }
+    this.socket = io(wsPath, {
       transports: ["websocket"],
       autoConnect: false,
     });
@@ -83,90 +90,90 @@ class EventHandlers {
     client.socket.on(SocketServerEvents.CONNECT, this.onConnect.bind(this));
     client.socket.on(
       SocketServerEvents.USER_AUTHENTICATED,
-      this.onAuthenticated.bind(this)
+      this.onAuthenticated.bind(this),
     );
     client.socket.on(
       SocketServerEvents.FRIEND_REQUEST_ACCEPTED,
-      this.onAuthenticated.bind(this)
+      this.onAuthenticated.bind(this),
     );
 
     client.socket.on(
       SocketServerEvents.SERVER_MEMBER_JOINED,
-      this.onServerMemberJoined.bind(this)
+      this.onServerMemberJoined.bind(this),
     );
     client.socket.on(
       SocketServerEvents.SERVER_MEMBER_UPDATED,
-      this.onServerMemberUpdated.bind(this)
+      this.onServerMemberUpdated.bind(this),
     );
     client.socket.on(
       SocketServerEvents.SERVER_MEMBER_LEFT,
-      this.onServerMemberLeft.bind(this)
+      this.onServerMemberLeft.bind(this),
     );
 
     client.socket.on(
       SocketServerEvents.SERVER_JOINED,
-      this.onServerJoined.bind(this)
+      this.onServerJoined.bind(this),
     );
     client.socket.on(
       SocketServerEvents.SERVER_CHANNEL_CREATED,
-      this.onServerChannelCreated.bind(this)
+      this.onServerChannelCreated.bind(this),
     );
     client.socket.on(
       SocketServerEvents.SERVER_CHANNEL_UPDATED,
-      this.onServerChannelUpdated.bind(this)
+      this.onServerChannelUpdated.bind(this),
     );
     client.socket.on(
       SocketServerEvents.SERVER_CHANNEL_DELETED,
-      this.onServerChannelDeleted.bind(this)
+      this.onServerChannelDeleted.bind(this),
     );
 
     client.socket.on(
       SocketServerEvents.SERVER_LEFT,
-      this.onServerLeft.bind(this)
+      this.onServerLeft.bind(this),
     );
 
     client.socket.on(
       SocketServerEvents.MESSAGE_CREATED,
-      this.onMessageCreated.bind(this)
+      this.onMessageCreated.bind(this),
     );
 
     client.socket.on(
       SocketServerEvents.MESSAGE_UPDATED,
-      this.onMessageUpdated.bind(this)
+      this.onMessageUpdated.bind(this),
     );
 
     client.socket.on(
       SocketServerEvents.MESSAGE_DELETED,
-      this.onMessageDeleted.bind(this)
+      this.onMessageDeleted.bind(this),
     );
 
     client.socket.on(
       SocketServerEvents.MESSAGE_BUTTON_CLICKED,
-      this.onMessageButtonClicked.bind(this)
+      this.onMessageButtonClicked.bind(this),
     );
     client.socket.on(
       SocketServerEvents.SERVER_ROLE_CREATED,
-      this.onServerRoleCreated.bind(this)
+      this.onServerRoleCreated.bind(this),
     );
     client.socket.on(
       SocketServerEvents.SERVER_ROLE_DELETED,
-      this.onServerRoleDeleted.bind(this)
+      this.onServerRoleDeleted.bind(this),
     );
     client.socket.on(
       SocketServerEvents.SERVER_ROLE_UPDATED,
-      this.onServerRoleUpdated.bind(this)
+      this.onServerRoleUpdated.bind(this),
     );
     client.socket.on(
       SocketServerEvents.SERVER_ROLE_ORDER_UPDATED,
-      this.onServerRoleOrderUpdated.bind(this)
+      this.onServerRoleOrderUpdated.bind(this),
     );
     client.socket.on(
       SocketServerEvents.MESSAGE_REACTION_ADDED,
-      this.onMessageReactionAdded.bind(this)
+      this.onMessageReactionAdded.bind(this),
     );
     client.socket.on(
       SocketServerEvents.MESSAGE_REACTION_REMOVED,
-      this.onMessageReactionRemoved.bind(this)
+      this.onMessageReactionRemoved.bind(this),
     );
   }
   onConnect() {
@@ -262,7 +269,7 @@ class EventHandlers {
     server?.channels.set(channel.id, channel);
     this.client.emit(
       ClientEvents.ServerChannelCreated,
-      channel as ServerChannel
+      channel as ServerChannel,
     );
   }
   onServerChannelUpdated(payload: {
@@ -276,7 +283,7 @@ class EventHandlers {
       updateClass<ServerChannel>(channel as ServerChannel, updated);
       this.client.emit(
         ClientEvents.ServerChannelUpdated,
-        channel as ServerChannel
+        channel as ServerChannel,
       );
     }
   }
@@ -405,7 +412,7 @@ class EventHandlers {
 function updateClass<T extends object>(classInstance: T, update: Partial<T>) {
   for (const [key, value] of Object.entries(update) as [
     keyof T,
-    T[keyof T]
+    T[keyof T],
   ][]) {
     classInstance[key] = value;
   }

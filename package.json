@@ -1,6 +1,6 @@
 {
   "name": "@nerimity/nerimity.js",
-  "version": "1.20.0",
+  "version": "1.20.1",
   "description": "",
   "main": "build/index.js",
   "scripts": {
@@ -12,20 +12,20 @@
   "author": "SupertigerDev",
   "license": "ISC",
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
+    "@eslint/js": "^10.0.1",
     "@types/node-fetch": "^2.6.13",
     "@types/ws": "^8.18.1",
-    "eslint": "^9.39.1",
-    "globals": "^16.5.0",
-    "nodemon": "^3.1.11",
+    "eslint": "^10.2.0",
+    "globals": "^17.4.0",
+    "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.48.1"
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.1"
   },
   "dependencies": {
-    "eventemitter3": "^5.0.1",
-    "socket.io-client": "^4.8.1",
-    "ws": "^8.18.3"
+    "eventemitter3": "^5.0.4",
+    "socket.io-client": "^4.8.3",
+    "ws": "^8.20.0"
   },
   "repository": {
     "type": "git",
