@@ -6,10 +6,33 @@ export interface AuthenticatedPayload {
   messageMentions: any[];
   channels: RawChannel[];
   serverRoles: any[];
-  presences: any[];
+  presences: RawUserPresence[];
   friends: any[];
   inbox: any[];
   lastSeenServerChannelIds: Record<string, number>; // { [channelId]: timestamp }
+}
+
+
+export interface RawUserPresence {
+  status: number;
+  userId: string;
+  custom?: string;
+  activities?: RawUserActivity[];
+}
+
+export interface RawUserActivity {
+  action: string;
+  name: string;
+  startedAt: number;
+  endsAt?: number;
+  speed?: number;
+  updatedAt?: number;
+
+  imgSrc?: string;
+  title?: string;
+  subtitle?: string;
+  link?: string;
+  emoji?: string;
 }
 
 export interface RawMessageReaction {

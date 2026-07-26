@@ -15,6 +15,7 @@ import {
   RawServer,
   RawServerMember,
   RawServerRole,
+  RawUserPresence,
   ReactionAddedPayload,
   ReactionRemovedPayload,
 } from "../RawData";
@@ -89,12 +90,16 @@ class EventHandlers {
 
     client.socket.on(SocketServerEvents.CONNECT, this.onConnect.bind(this));
     client.socket.on(
+      SocketServerEvents.AUTHENTICATE_ERROR,
+      this.onAuthError.bind(this),
+    );
+    client.socket.on(
       SocketServerEvents.USER_AUTHENTICATED,
       this.onAuthenticated.bind(this),
     );
     client.socket.on(
-      SocketServerEvents.FRIEND_REQUEST_ACCEPTED,
-      this.onAuthenticated.bind(this),
+      SocketServerEvents.USER_PRESENCE_UPDATE,
+      this.onUserPresenceUpdate.bind(this),
     );
 
     client.socket.on(
@@ -181,6 +186,9 @@ class EventHandlers {
       token: this.client.token,
     });
   }
+  onAuthError(payload: { message: string }) {
+    throw new Error(JSON.stringify(payload))
+  }
   onAuthenticated(payload: AuthenticatedPayload) {
     this.client.user = new ClientUser(this.client, payload.user);
 
@@ -209,8 +217,28 @@ class EventHandlers {
       const server = this.client.servers.cache.get(role.serverId);
       server?.roles.setCache(role);
     }
+    for (let i = 0; i < payload.presences.length; i++) {
+      const { userId, ...presence } = payload.presences[i];
+      const user = this.client.users.cache.get(userId)
+      if (user) {
+        user.presence = presence
+      }
+    }
 
     this.client.emit(ClientEvents.Ready);
+  }
+
+  onUserPresenceUpdate(payload: Partial<RawUserPresence>) {
+    const { userId, ...presence } = payload;
+    const user = this.client.users.cache.get(userId!)
+    if (!user) return;
+    if (payload.status === 0) {
+      user.presence = undefined;
+    } else {
+      user.presence = { ...user.presence, ...presence as RawUserPresence }
+    }
+    this.client.emit(ClientEvents.UserPresenceUpdate, user.presence, user);
+
   }
 
   onServerMemberJoined(payload: { serverId: string; member: RawServerMember }) {
@@ -242,7 +270,7 @@ class EventHandlers {
     members: RawServerMember[];
     channels: RawChannel[];
     roles: RawServerRole[];
-    // memberPresences: any[]
+    memberPresences: RawUserPresence[]
     // voiceChannelUsers: any[];
   }) {
     const server = this.client.servers.setCache(payload.server);
@@ -261,6 +289,14 @@ class EventHandlers {
       const channel = payload.channels[i];
       this.client.channels.setCache(channel);
     }
+    for (let i = 0; i < payload.memberPresences.length; i++) {
+      const { userId, ...presence } = payload.memberPresences[i];
+      const user = this.client.users.cache.get(userId)
+      if (user) {
+        user.presence = presence
+      }
+    }
+
     this.client.emit(ClientEvents.ServerJoined, server);
   }
   onServerChannelCreated(payload: { serverId: string; channel: RawChannel }) {

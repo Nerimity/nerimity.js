@@ -5,7 +5,7 @@ import { ServerChannel } from "./classes/ServerChannel";
 import { ServerMember } from "./classes/ServerMember";
 import { ServerRole, ServerRoles } from "./classes/ServerRole";
 import { Reaction } from "./classes/Reaction";
-import { User } from "./classes/User";
+import { Presence, User } from "./classes/User";
 
 export const ClientEvents = {
   Ready: "ready",
@@ -27,6 +27,7 @@ export const ClientEvents = {
   ServerRoleDeleted: "serverRoleDeleted",
   ServerRoleUpdated: "serverRoleUpdated",
   ServerRoleOrderUpdated: "serverRoleOrderUpdated",
+  UserPresenceUpdate: "userPresenceUpdate"
 } as const;
 
 export type ClientEventMap = {
@@ -49,6 +50,7 @@ export type ClientEventMap = {
   serverRoleDeleted: (data: ServerRole) => void;
   serverRoleUpdated: (data: ServerRole) => void;
   serverRoleOrderUpdated: (data: ServerRoles) => void;
+  userPresenceUpdate: (presence: Presence | undefined, user: User) => void
 };
 
 export const SocketClientEvents = {

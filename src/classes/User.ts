@@ -1,4 +1,4 @@
-import { RawUser } from "../RawData";
+import { RawUser, RawUserPresence } from "../RawData";
 import { Client } from "./Client";
 import { Collection } from "./Collection";
 
@@ -15,6 +15,9 @@ export class Users {
     return user;
   }
 }
+
+
+export type Presence = Omit<RawUserPresence, 'userId'>
 export class User {
   client: Client;
   id: string;
@@ -26,6 +29,7 @@ export class User {
   badges: number;
   joinedAt?: number;
   bot?: boolean;
+  presence?: Presence;
   constructor(client: Client, user: RawUser) {
     this.client = client;
 
